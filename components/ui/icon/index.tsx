@@ -160,3 +160,11 @@ export const DollarSignIcon = make(
     <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
   </>,
 );
+export const TagsIcon = make(
+  <>
+    <path d="M15 5h5v5" />
+    <path d="M20 5 9 16" />
+    <path d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" />
+    <path d="m12 17-3.5 3.5a1.5 1.5 0 0 1-2.12 0L3.5 17.62a1.5 1.5 0 0 1 0-2.12L7 12" />
+  </>,
+);

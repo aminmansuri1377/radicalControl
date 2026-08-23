@@ -92,6 +92,17 @@ export const productRouter = router({
                 language: true,
               },
             },
+
+            attributeValues: {
+              include: {
+                value: {
+                  include: {
+                    attribute: { include: { translations: true } },
+                    translations: true,
+                  },
+                },
+              },
+            },
           },
         }),
 
@@ -121,6 +132,16 @@ export const productRouter = router({
         include: {
           category: { include: { translations: true } },
           translations: true,
+          attributeValues: {
+            include: {
+              value: {
+                include: {
+                  attribute: { include: { translations: true } },
+                  translations: true,
+                },
+              },
+            },
+          },
         },
       });
     }),
@@ -133,11 +154,25 @@ export const productRouter = router({
         images: z.array(z.string()).default([]),
         categoryId: z.string(),
         published: z.boolean(),
+        attributeValueIds: z.array(z.string()).default([]),
         translations: z.array(translationInput),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       try {
+        // اعتبارسنجیِ وجودِ valueId ها برای جلوگیری از نسبت‌دادن مقدار نامعتبر
+        if (input.attributeValueIds.length) {
+          const count = await ctx.prisma.attributeValue.count({
+            where: { id: { in: input.attributeValueIds } },
+          });
+          if (count !== input.attributeValueIds.length) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "یک یا چند مقدار ویژگی نامعتبر است",
+            });
+          }
+        }
+
         return ctx.prisma.product.create({
           data: {
             slug: input.slug,
@@ -146,6 +181,9 @@ export const productRouter = router({
             categoryId: input.categoryId,
             published: input.published,
             translations: { create: input.translations },
+            attributeValues: {
+              create: input.attributeValueIds.map((valueId) => ({ valueId })),
+            },
           },
         });
       } catch (error: any) {
@@ -165,17 +203,45 @@ export const productRouter = router({
         images: z.array(z.string()).default([]),
         categoryId: z.string(),
         published: z.boolean(),
+        attributeValueIds: z.array(z.string()).default([]),
         translations: z.array(translationInput),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       try {
-        const { id, translations, ...productData } = input;
+        const { id, translations, attributeValueIds, ...productData } = input;
+
+        // اعتبارسنجیِ valueId ها
+        if (attributeValueIds.length) {
+          const count = await ctx.prisma.attributeValue.count({
+            where: { id: { in: attributeValueIds } },
+          });
+          if (count !== attributeValueIds.length) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "یک یا چند مقدار ویژگی نامعتبر است",
+            });
+          }
+        }
 
         await ctx.prisma.product.update({
           where: { id },
           data: productData,
         });
+
+        // همگام‌سازی تمیزِ ویژگی‌های محصول: حذف همه + ساخت مجدد مقادیر جدید
+        await ctx.prisma.productAttributeValue.deleteMany({
+          where: { productId: id },
+        });
+        if (attributeValueIds.length) {
+          await ctx.prisma.productAttributeValue.createMany({
+            data: attributeValueIds.map((valueId) => ({
+              productId: id,
+              valueId,
+            })),
+            skipDuplicates: true,
+          });
+        }
 
         for (const translation of translations) {
           await ctx.prisma.productTranslation.upsert({

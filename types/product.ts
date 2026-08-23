@@ -17,6 +17,7 @@ export const productSchema = z.object({
   images: z.array(z.string()).default([]),
   categoryId: z.string().min(1, "انتخاب کتگوری اجباری است"), // اجباری، هر عمقی از درخت
   published: z.boolean(),
+  attributeValueIds: z.array(z.string()).default([]), // مقادیر ویژگی‌های انتخاب‌شده برای محصول
   translations: z.array(productTranslationSchema),
 });
 

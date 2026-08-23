@@ -9,6 +9,7 @@ import { publicRouter } from "./public";
 import { contentRouter } from "./content";
 import { priceTickerRouter } from "./priceTicker";
 import { contactRequestRouter } from "./contactRequest";
+import { attributeRouter } from "./attribute";
 export const appRouter = router({
   health: healthRouter,
   adminAuth: adminAuthRouter,
@@ -19,6 +20,7 @@ export const appRouter = router({
   content: contentRouter,
   priceTicker: priceTickerRouter,
   contactRequest: contactRequestRouter,
+  attribute: attributeRouter,
 });
 
 export type AppRouter = typeof appRouter;

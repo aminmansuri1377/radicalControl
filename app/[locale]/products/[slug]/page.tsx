@@ -63,6 +63,32 @@ export default function ProductPage() {
       <hr />
 
       <div>{data.specifications}</div>
+
+      {data.product.attributeValues &&
+        data.product.attributeValues.length > 0 && (
+          <>
+            <hr />
+            <h2>ویژگی‌ها</h2>
+            <table
+              className="w-full max-w-md border-collapse text-sm"
+              style={{ direction: "rtl" }}
+            >
+              <tbody>
+                {data.product.attributeValues.map((av) => {
+                  const attrName = av.value.attribute.translations[0]?.name;
+                  const valLabel = av.value.translations[0]?.label;
+                  if (!attrName || !valLabel) return null;
+                  return (
+                    <tr key={av.id} className="border-b border-border">
+                      <td className="py-2 ps-2 font-medium">{attrName}</td>
+                      <td className="py-2 ps-2">{valLabel}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </>
+        )}
     </div>
   );
 }

@@ -59,6 +59,8 @@ export default function EditProductPage() {
         images: Array.isArray(data.images) ? (data.images as string[]) : [],
         categoryId: data.categoryId,
         published: data.published,
+        attributeValueIds:
+          data.attributeValues?.map((av) => av.valueId) ?? [],
         translations: data.translations.map((t) => ({
           languageId: t.languageId,
           slug: t.slug,

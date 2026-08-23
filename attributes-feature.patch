@@ -1,0 +1,2097 @@
+diff --git a/app/[locale]/category/[slug]/page.tsx b/app/[locale]/category/[slug]/page.tsx
+index bda3bc5..265771e 100644
+--- a/app/[locale]/category/[slug]/page.tsx
++++ b/app/[locale]/category/[slug]/page.tsx
+@@ -4,8 +4,6 @@ import { useEffect, useState } from "react";
+ 
+ import Link from "next/link";
+ 
+-import { useParams } from "next/navigation";
+-
+ import { trpc } from "@/lib/trpc/client";
+ 
+ import { ProductSearch } from "@/components/site/ProductSearch";
+@@ -15,6 +13,10 @@ import { Pagination } from "@/components/site/Pagination";
+ import { useDebounce } from "@/hooks/useDebounce";
+ import toast from "react-hot-toast";
+ import { useDecodedParams } from "@/hooks/useDecodedParam";
++import {
++  AttributeFilter,
++  type AttributeFilterState,
++} from "@/components/attribute/AttributeFilter";
+ 
+ export default function CategoryPage() {
+   const params = useDecodedParams<{ locale: string; slug: string }>();
+@@ -27,14 +29,23 @@ export default function CategoryPage() {
+ 
+   const [page, setPage] = useState(1);
+ 
++  const [attributeFilters, setAttributeFilters] = useState<AttributeFilterState>(
++    {},
++  );
++
+   const debouncedSearch = useDebounce(search, 500);
+ 
++  // ویژگی‌های قابل‌فیلتر برای این زبان
++  const { data: filterAttributes = [] } =
++    trpc.public.getFilterableAttributes.useQuery({ locale });
++
+   const { data, isLoading, isFetching, error } =
+     trpc.public.getCategoryPage.useQuery(
+       {
+         locale,
+         slug,
+         search: debouncedSearch,
++        attributeFilters,
+         page,
+         limit: 12,
+       },
+@@ -56,7 +67,7 @@ export default function CategoryPage() {
+   }
+ 
+   return (
+-    <div className="m-40">
++    <div className="m-10 lg:m-20">
+       <h1>{data.category.name}</h1>
+ 
+       <hr />
+@@ -66,7 +77,7 @@ export default function CategoryPage() {
+       {data.children.length === 0 ? (
+         <div>No Sub Categories</div>
+       ) : (
+-        data.children.map((child: any) => {
++        data.children.map((child) => {
+           const t = child.translations[0];
+ 
+           return (
+@@ -79,66 +90,85 @@ export default function CategoryPage() {
+ 
+       <hr />
+ 
+-      <div
+-        style={{
+-          marginBottom: 20,
+-        }}
+-      >
+-        <ProductSearch
+-          value={search}
+-          onChange={(value) => {
+-            setSearch(value);
+-
+-            setPage(1);
+-          }}
+-        />
+-      </div>
+-
+-      {isFetching && (
+-        <div
+-          style={{
+-            marginBottom: 10,
+-          }}
+-        >
+-          Searching...
++      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[260px_1fr]">
++        {/* ستون فیلتر */}
++        <aside className="lg:sticky lg:top-20 lg:self-start">
++          <AttributeFilter
++            attributes={filterAttributes}
++            value={attributeFilters}
++            onChange={(next) => {
++              setAttributeFilters(next);
++              setPage(1);
++            }}
++          />
++        </aside>
++
++        {/* ستون محصولات */}
++        <div>
++          <div style={{ marginBottom: 20 }}>
++            <ProductSearch
++              value={search}
++              onChange={(value) => {
++                setSearch(value);
++                setPage(1);
++              }}
++            />
++          </div>
++
++          {isFetching && (
++            <div style={{ marginBottom: 10 }}>Searching...</div>
++          )}
++
++          <div style={{ marginBottom: 15, fontWeight: 600 }}>
++            Total Products: {data.total}
++          </div>
++
++          <h2>Products</h2>
++
++          {data.products.length === 0 ? (
++            <div>No Products Found</div>
++          ) : (
++            <ul className="space-y-2">
++              {data.products.map((product) => {
++                const t = product.translations[0];
++                return (
++                  <li key={product.id}>
++                    <Link href={`/${locale}/products/${t.slug}`}>
++                      {t.name}
++                    </Link>
++                    {/* نمایش ویژگی‌های محصول به‌صورت خلاصه */}
++                    {product.attributeValues?.length > 0 && (
++                      <div className="flex flex-wrap gap-1">
++                        {product.attributeValues.map((av) => {
++                          const attrName =
++                            av.value.attribute.translations[0]?.name;
++                          const valLabel =
++                            av.value.translations[0]?.label;
++                          if (!attrName || !valLabel) return null;
++                          return (
++                            <span
++                              key={av.id}
++                              className="rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground"
++                            >
++                              {attrName}: {valLabel}
++                            </span>
++                          );
++                        })}
++                      </div>
++                    )}
++                  </li>
++                );
++              })}
++            </ul>
++          )}
++
++          <Pagination
++            page={page}
++            totalPages={data.totalPages}
++            onPageChange={setPage}
++          />
+         </div>
+-      )}
+-
+-      <div
+-        style={{
+-          marginBottom: 15,
+-          fontWeight: 600,
+-        }}
+-      >
+-        Total Products: {data.total}
+       </div>
+-
+-      <h2>Products</h2>
+-
+-      {data.products.length === 0 ? (
+-        <div>No Products Found</div>
+-      ) : (
+-        data.products.map((product) => {
+-          const t = product.translations[0];
+-
+-          return (
+-            <div
+-              key={product.id}
+-              style={{
+-                marginBottom: 10,
+-              }}
+-            >
+-              <Link href={`/${locale}/products/${t.slug}`}>{t.name}</Link>
+-            </div>
+-          );
+-        })
+-      )}
+-
+-      <Pagination
+-        page={page}
+-        totalPages={data.totalPages}
+-        onPageChange={setPage}
+-      />
+     </div>
+   );
+ }
+diff --git a/app/[locale]/products/[slug]/page.tsx b/app/[locale]/products/[slug]/page.tsx
+index 892c4ab..9357753 100644
+--- a/app/[locale]/products/[slug]/page.tsx
++++ b/app/[locale]/products/[slug]/page.tsx
+@@ -63,6 +63,32 @@ export default function ProductPage() {
+       <hr />
+ 
+       <div>{data.specifications}</div>
++
++      {data.product.attributeValues &&
++        data.product.attributeValues.length > 0 && (
++          <>
++            <hr />
++            <h2>ویژگی‌ها</h2>
++            <table
++              className="w-full max-w-md border-collapse text-sm"
++              style={{ direction: "rtl" }}
++            >
++              <tbody>
++                {data.product.attributeValues.map((av) => {
++                  const attrName = av.value.attribute.translations[0]?.name;
++                  const valLabel = av.value.translations[0]?.label;
++                  if (!attrName || !valLabel) return null;
++                  return (
++                    <tr key={av.id} className="border-b border-border">
++                      <td className="py-2 ps-2 font-medium">{attrName}</td>
++                      <td className="py-2 ps-2">{valLabel}</td>
++                    </tr>
++                  );
++                })}
++              </tbody>
++            </table>
++          </>
++        )}
+     </div>
+   );
+ }
+diff --git a/app/panel/(admin)/attributes/[id]/page.tsx b/app/panel/(admin)/attributes/[id]/page.tsx
+new file mode 100644
+index 0000000..e84f741
+--- /dev/null
++++ b/app/panel/(admin)/attributes/[id]/page.tsx
+@@ -0,0 +1,74 @@
++"use client";
++
++import { useMemo } from "react";
++import toast from "react-hot-toast";
++import { useRouter, useParams } from "next/navigation";
++import { trpc } from "@/lib/trpc/client";
++import { AttributeForm } from "@/components/attribute/AttributeForm";
++import type { AttributeFormValues } from "@/types/attribute";
++
++export default function EditAttributePage() {
++  const router = useRouter();
++  const { id } = useParams<{ id: string }>();
++  const utils = trpc.useUtils();
++
++  const { data, isLoading } = trpc.attribute.getById.useQuery(
++    { id },
++    { enabled: !!id },
++  );
++
++  const updateMutation = trpc.attribute.update.useMutation({
++    onSuccess: async () => {
++      toast.success("ویژگی بروزرسانی شد");
++      await utils.attribute.getAll.invalidate();
++      await utils.attribute.getById.invalidate({ id });
++      router.push("/panel/attributes");
++    },
++    onError: (error) => {
++      toast.error(error.message);
++    },
++  });
++
++  const defaultValues = useMemo<AttributeFormValues | undefined>(() => {
++    if (!data) return undefined;
++    return {
++      slug: data.slug,
++      published: data.published,
++      filterable: data.filterable,
++      sortOrder: data.sortOrder,
++      translations: data.translations.map((t) => ({
++        languageId: t.languageId,
++        name: t.name,
++      })),
++      values: data.values.map((v) => ({
++        id: v.id,
++        slug: v.slug,
++        sortOrder: v.sortOrder,
++        translations: v.translations.map((vt) => ({
++          languageId: vt.languageId,
++          label: vt.label,
++        })),
++      })),
++    };
++  }, [data]);
++
++  const handleSubmit = (values: AttributeFormValues) => {
++    updateMutation.mutate({ id, ...values });
++  };
++
++  if (!id) return <div>Invalid ID</div>;
++  if (isLoading) return <div>Loading...</div>;
++
++  return (
++    <>
++      <h1 style={{ padding: "20px 20px 0" }}>ویرایش ویژگی</h1>
++      <AttributeForm
++        key={data?.id}
++        defaultValues={defaultValues}
++        onSubmit={handleSubmit}
++        isLoading={updateMutation.isPending}
++        submitLabel="بروزرسانی"
++      />
++    </>
++  );
++}
+diff --git a/app/panel/(admin)/attributes/create/page.tsx b/app/panel/(admin)/attributes/create/page.tsx
+new file mode 100644
+index 0000000..17dd074
+--- /dev/null
++++ b/app/panel/(admin)/attributes/create/page.tsx
+@@ -0,0 +1,38 @@
++"use client";
++
++import toast from "react-hot-toast";
++import { useRouter } from "next/navigation";
++import { trpc } from "@/lib/trpc/client";
++import { AttributeForm } from "@/components/attribute/AttributeForm";
++import type { AttributeFormValues } from "@/types/attribute";
++
++export default function CreateAttributePage() {
++  const router = useRouter();
++  const utils = trpc.useUtils();
++
++  const createMutation = trpc.attribute.create.useMutation({
++    onSuccess: async () => {
++      toast.success("ویژگی با موفقیت ایجاد شد");
++      await utils.attribute.getAll.invalidate();
++      router.push("/panel/attributes");
++    },
++    onError: (error) => {
++      toast.error(error.message);
++    },
++  });
++
++  const handleSubmit = (values: AttributeFormValues) => {
++    createMutation.mutate(values);
++  };
++
++  return (
++    <div className="font-peyda-regular text-right">
++      <h1 style={{ padding: "20px 20px 0" }}>ساخت ویژگی</h1>
++      <AttributeForm
++        onSubmit={handleSubmit}
++        isLoading={createMutation.isPending}
++        submitLabel="ایجاد"
++      />
++    </div>
++  );
++}
+diff --git a/app/panel/(admin)/attributes/page.tsx b/app/panel/(admin)/attributes/page.tsx
+new file mode 100644
+index 0000000..0f80221
+--- /dev/null
++++ b/app/panel/(admin)/attributes/page.tsx
+@@ -0,0 +1,11 @@
++import { AttributeList } from "@/components/attribute/AttributeList";
++
++export default function AttributesPage() {
++  return (
++    <div className="text-right">
++      <div style={{ padding: 20 }}>
++        <AttributeList />
++      </div>
++    </div>
++  );
++}
+diff --git a/app/panel/(admin)/products/[id]/page.tsx b/app/panel/(admin)/products/[id]/page.tsx
+index a94da94..ca8b6d1 100644
+--- a/app/panel/(admin)/products/[id]/page.tsx
++++ b/app/panel/(admin)/products/[id]/page.tsx
+@@ -59,6 +59,8 @@ export default function EditProductPage() {
+         images: Array.isArray(data.images) ? (data.images as string[]) : [],
+         categoryId: data.categoryId,
+         published: data.published,
++        attributeValueIds:
++          data.attributeValues?.map((av) => av.valueId) ?? [],
+         translations: data.translations.map((t) => ({
+           languageId: t.languageId,
+           slug: t.slug,
+diff --git a/components/attribute/AttributeFilter.tsx b/components/attribute/AttributeFilter.tsx
+new file mode 100644
+index 0000000..51c2d3c
+--- /dev/null
++++ b/components/attribute/AttributeFilter.tsx
+@@ -0,0 +1,125 @@
++"use client";
++
++import { useMemo } from "react";
++import { cn } from "@/lib/cn";
++import { CheckIcon } from "../ui/icon";
++
++interface FilterValue {
++  id: string;
++  slug: string;
++  translations: { label: string }[];
++}
++
++interface FilterAttribute {
++  id: string;
++  slug: string;
++  translations: { name: string }[];
++  values: FilterValue[];
++}
++
++export interface AttributeFilterState {
++  /** کلید = attributeId، مقدار = لیست valueId های انتخاب‌شده */
++  [attributeId: string]: string[];
++}
++
++interface AttributeFilterProps {
++  attributes: FilterAttribute[];
++  value: AttributeFilterState;
++  onChange: (next: AttributeFilterState) => void;
++}
++
++function firstLabel(
++  translations: { name?: string; label?: string }[],
++  fallback = "",
++): string {
++  return translations[0]?.name ?? translations[0]?.label ?? fallback;
++}
++
++/**
++ * پنل فیلتر ویژگی‌ها برای صفحه نمایش محصولات. هر ویژگی به‌صورت یک گروه
++ * از گزینه‌های قابل‌انتخاب (چندانتخابی) نمایش داده می‌شود.
++ */
++export function AttributeFilter({
++  attributes,
++  value,
++  onChange,
++}: AttributeFilterProps) {
++  const selected = useMemo(() => value, [value]);
++
++  const toggle = (attributeId: string, valueId: string) => {
++    const current = new Set(selected[attributeId] ?? []);
++    if (current.has(valueId)) {
++      current.delete(valueId);
++    } else {
++      current.add(valueId);
++    }
++    const next = { ...selected };
++    if (current.size === 0) {
++      delete next[attributeId];
++    } else {
++      next[attributeId] = Array.from(current);
++    }
++    onChange(next);
++  };
++
++  const clearAll = () => onChange({});
++
++  const totalSelected = Object.values(selected).reduce(
++    (sum, ids) => sum + ids.length,
++    0,
++  );
++
++  if (attributes.length === 0) return null;
++
++  return (
++    <div className="space-y-5">
++      <div className="flex items-center justify-between">
++        <h3 className="text-sm font-semibold">فیلتر ویژگی‌ها</h3>
++        {totalSelected > 0 && (
++          <button
++            type="button"
++            onClick={clearAll}
++            className="text-xs text-primary hover:underline"
++          >
++            پاک کردن همه ({totalSelected})
++          </button>
++        )}
++      </div>
++
++      {attributes.map((attr) => {
++        const attrSelected = new Set(selected[attr.id] ?? []);
++        return (
++          <div
++            key={attr.id}
++            className="rounded-lg border border-border p-3"
++          >
++            <div className="mb-2 text-sm font-medium">
++              {firstLabel(attr.translations)}
++            </div>
++            <div className="flex flex-wrap gap-2">
++              {attr.values.map((v) => {
++                const isOn = attrSelected.has(v.id);
++                return (
++                  <button
++                    key={v.id}
++                    type="button"
++                    onClick={() => toggle(attr.id, v.id)}
++                    className={cn(
++                      "inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs transition-colors",
++                      isOn
++                        ? "border-primary bg-primary text-primary-foreground"
++                        : "border-border bg-background text-foreground hover:bg-accent/50",
++                    )}
++                  >
++                    {isOn && <CheckIcon className="size-3" />}
++                    {firstLabel(v.translations)}
++                  </button>
++                );
++              })}
++            </div>
++          </div>
++        );
++      })}
++    </div>
++  );
++}
+diff --git a/components/attribute/AttributeForm.tsx b/components/attribute/AttributeForm.tsx
+new file mode 100644
+index 0000000..690b07e
+--- /dev/null
++++ b/components/attribute/AttributeForm.tsx
+@@ -0,0 +1,313 @@
++"use client";
++
++import { useEffect } from "react";
++import {
++  useForm,
++  useFieldArray,
++  Controller,
++  type Resolver,
++} from "react-hook-form";
++import { zodResolver } from "@hookform/resolvers/zod";
++import toast from "react-hot-toast";
++
++import { attributeSchema, type AttributeFormValues } from "@/types/attribute";
++import { trpc } from "@/lib/trpc/client";
++import { Button } from "../ui";
++import { TrashIcon, PlusIcon } from "../ui/icon";
++
++interface AttributeFormProps {
++  defaultValues?: AttributeFormValues;
++  onSubmit: (values: AttributeFormValues) => void;
++  isLoading?: boolean;
++  submitLabel?: string;
++}
++
++const buildEmptyTranslation = (languageId: string) => ({
++  languageId,
++  name: "",
++});
++
++const buildEmptyValue = (languages: { id: string }[]) => ({
++  slug: "",
++  sortOrder: 0,
++  translations: languages.map((l) => ({ languageId: l.id, label: "" })),
++});
++
++export function AttributeForm({
++  defaultValues,
++  onSubmit,
++  isLoading,
++  submitLabel = "ایجاد",
++}: AttributeFormProps) {
++  const { data: languages = [] } = trpc.language.getAll.useQuery();
++
++  const {
++    register,
++    handleSubmit,
++    control,
++    reset,
++    formState: { errors },
++  } = useForm<AttributeFormValues>({
++    resolver: zodResolver(attributeSchema) as unknown as Resolver<AttributeFormValues>,
++    defaultValues: defaultValues ?? {
++      slug: "",
++      published: true,
++      filterable: true,
++      sortOrder: 0,
++      translations: [],
++      values: [],
++    },
++  });
++
++  const { fields: langFields, replace: replaceLangs } = useFieldArray({
++    control,
++    name: "translations",
++  });
++  const { fields: valueFields, append, remove } = useFieldArray({
++    control,
++    name: "values",
++  });
++
++  // وقتی لیست زبان‌ها لود شد، فیلدهای ترجمه‌ی نام را همگام می‌کنیم
++  useEffect(() => {
++    if (!languages.length) return;
++    const merged = languages.map((lang) => {
++      const existing = defaultValues?.translations?.find(
++        (t) => t.languageId === lang.id,
++      );
++      return existing ?? buildEmptyTranslation(lang.id);
++    });
++    replaceLangs(merged);
++  }, [languages, defaultValues, replaceLangs]);
++
++  // هنگام ویرایش، مقدار کل فرم را با مقادیر پیش‌فرض ست می‌کنیم
++  useEffect(() => {
++    if (!defaultValues || !languages.length) return;
++    const mergedLangs = languages.map((lang) => {
++      const existing = defaultValues.translations?.find(
++        (t) => t.languageId === lang.id,
++      );
++      return existing ?? buildEmptyTranslation(lang.id);
++    });
++    const mergedValues = defaultValues.values.map((v) => ({
++      id: v.id,
++      slug: v.slug,
++      sortOrder: v.sortOrder,
++      translations: languages.map((lang) => {
++        const existing = v.translations.find(
++          (t) => t.languageId === lang.id,
++        );
++        return existing ?? { languageId: lang.id, label: "" };
++      }),
++    }));
++    reset({
++      ...defaultValues,
++      translations: mergedLangs,
++      values: mergedValues,
++    });
++  }, [defaultValues, languages, reset]);
++
++  const handleAddValue = () => {
++    if (!languages.length) {
++      toast.error("ابتدا منتظر بارگذاری زبان‌ها باشید");
++      return;
++    }
++    append(buildEmptyValue(languages));
++  };
++
++  return (
++    <form onSubmit={handleSubmit(onSubmit)} style={{ padding: 20 }}>
++      {Object.keys(errors).length > 0 && (
++        <div
++          style={{
++            background: "#fee",
++            padding: 10,
++            marginBottom: 10,
++            color: "red",
++          }}
++        >
++          فرم دارای خطا است. لطفاً همه‌ی فیلدهای اجباری را پر کنید.
++        </div>
++      )}
++
++      <div>
++        <label>main Slug</label>
++        <br />
++        <input
++          placeholder="مثلاً color"
++          className="px-5 py-1 rounded-2xl border-2 border-primary"
++          {...register("slug")}
++        />
++        {errors.slug && (
++          <span style={{ color: "red" }}>{errors.slug.message}</span>
++        )}
++      </div>
++      <br />
++
++      <div className="flex flex-wrap gap-6">
++        <label className="flex items-center gap-2">
++          Published
++          <Controller
++            name="published"
++            control={control}
++            render={({ field }) => (
++              <input
++                type="checkbox"
++                checked={field.value}
++                onChange={(e) => field.onChange(e.target.checked)}
++              />
++            )}
++          />
++        </label>
++
++        <label className="flex items-center gap-2">
++          قابل فیلتر (نمایش در صفحه محصولات)
++          <Controller
++            name="filterable"
++            control={control}
++            render={({ field }) => (
++              <input
++                type="checkbox"
++                checked={field.value}
++                onChange={(e) => field.onChange(e.target.checked)}
++              />
++            )}
++          />
++        </label>
++
++        <label className="flex items-center gap-2">
++          ترتیب
++          <input
++            type="number"
++            className="w-20 px-2 py-1 rounded-2xl border-2 border-primary"
++            {...register("sortOrder", { valueAsNumber: true })}
++          />
++        </label>
++      </div>
++
++      <hr className="my-6" />
++      <h3>نام ویژگی به ازای هر زبان</h3>
++
++      {langFields.map((field, index) => {
++        const lang = languages.find((l) => l.id === field.languageId);
++        const tErrors = errors.translations?.[index];
++        return (
++          <div
++            key={field.id}
++            className="my-3 flex items-center gap-3 rounded-md border border-border p-3"
++          >
++            <span className="min-w-28 font-medium">
++              {lang ? `${lang.name ?? ""} (${lang.code})` : field.languageId}
++            </span>
++            <input
++              type="hidden" {...register(`translations.${index}.languageId`)} />
++            <input
++              placeholder="مثلاً رنگ"
++              className="flex-1 px-5 py-1 rounded-2xl border-2 border-primary"
++              {...register(`translations.${index}.name`)}
++            />
++            {tErrors?.name && (
++              <span style={{ color: "red", fontSize: 12 }}>
++                {tErrors.name.message}
++              </span>
++            )}
++          </div>
++        );
++      })}
++
++      <hr className="my-6" />
++      <div className="mb-4 flex items-center justify-between">
++        <h3>مقادیر ویژگی</h3>
++        <Button type="button" variant="outline" onClick={handleAddValue}>
++          <PlusIcon className="me-1 size-4" />
++          افزودن مقدار
++        </Button>
++      </div>
++
++      {valueFields.length === 0 && (
++        <p className="text-sm text-muted-foreground">
++          هنوز مقداری اضافه نشده. مثلاً برای رنگ: آبی، قرمز، مشکی.
++        </p>
++      )}
++
++      {valueFields.map((field, index) => {
++        const tErrors = errors.values?.[index];
++        return (
++          <div
++            key={field.id}
++            className="mb-4 rounded-md border border-border p-4"
++          >
++            <div className="mb-3 flex items-center gap-3">
++              <input
++                type="hidden" {...register(`values.${index}.id`)} />
++              <label className="flex items-center gap-2 text-sm">
++                Slug:
++                <input
++                  placeholder="مثلاً blue"
++                  className="px-3 py-1 rounded-2xl border-2 border-primary"
++                  {...register(`values.${index}.slug`)}
++                />
++              </label>
++              <label className="flex items-center gap-2 text-sm">
++                ترتیب:
++                <input
++                  type="number"
++                  className="w-20 px-2 py-1 rounded-2xl border-2 border-primary"
++                  {...register(`values.${index}.sortOrder`, {
++                    valueAsNumber: true,
++                  })}
++                />
++              </label>
++              <button
++                type="button"
++                onClick={() => remove(index)}
++                aria-label="حذف مقدار"
++                className="ms-auto inline-flex items-center gap-1 rounded-md px-2 py-1 text-sm text-destructive hover:bg-destructive/10"
++              >
++                <TrashIcon className="size-4" />
++                حذف
++              </button>
++            </div>
++
++            {tErrors?.slug && (
++              <span style={{ color: "red", fontSize: 12 }}>
++                {tErrors.slug.message}
++              </span>
++            )}
++
++            <div className="space-y-2">
++              {languages.map((lang, li) => {
++                const vtError = tErrors?.translations?.[li];
++                return (
++                  <div key={lang.id} className="flex items-center gap-3">
++                    <span className="min-w-28 text-sm text-muted-foreground">
++                      {lang.name ?? ""} ({lang.code})
++                    </span>
++                    <input
++                      type="hidden"
++                      {...register(`values.${index}.translations.${li}.languageId`)}
++                    />
++                    <input
++                      placeholder="مثلاً آبی"
++                      className="flex-1 px-3 py-1 rounded-2xl border-2 border-primary"
++                      {...register(`values.${index}.translations.${li}.label`)}
++                    />
++                    {vtError?.label && (
++                      <span style={{ color: "red", fontSize: 12 }}>
++                        {vtError.label.message}
++                      </span>
++                    )}
++                  </div>
++                );
++              })}
++            </div>
++          </div>
++        );
++      })}
++
++      <Button type="submit" disabled={isLoading}>
++        {isLoading ? "Saving..." : submitLabel}
++      </Button>
++    </form>
++  );
++}
+diff --git a/components/attribute/AttributeList.tsx b/components/attribute/AttributeList.tsx
+new file mode 100644
+index 0000000..9de23d8
+--- /dev/null
++++ b/components/attribute/AttributeList.tsx
+@@ -0,0 +1,163 @@
++"use client";
++
++import { useEffect } from "react";
++import Link from "next/link";
++import toast from "react-hot-toast";
++
++import { trpc } from "@/lib/trpc/client";
++import { attributeName, valueLabel } from "@/lib/attribute";
++import { Badge } from "../ui";
++import {
++  Table,
++  TableHeader,
++  TableBody,
++  TableRow,
++  TableHead,
++  TableCell,
++} from "../ui/Table";
++
++type AttributeRow = {
++  id: string;
++  slug: string;
++  published: boolean;
++  filterable: boolean;
++  sortOrder: number;
++  translations: { languageId: string; name: string; language?: { code: string } }[];
++  values: {
++    id: string;
++    slug: string;
++    translations: { languageId: string; label: string; language?: { code: string } }[];
++  }[];
++};
++
++export function AttributeList() {
++  const utils = trpc.useUtils();
++  const { data: attributes = [], isLoading, error } =
++    trpc.attribute.getAll.useQuery();
++
++  useEffect(() => {
++    if (error) toast.error(error.message);
++  }, [error]);
++
++  const deleteMutation = trpc.attribute.delete.useMutation({
++    onSuccess: async () => {
++      toast.success("ویژگی حذف شد");
++      await utils.attribute.getAll.invalidate();
++    },
++    onError: (err) => toast.error(err.message),
++  });
++
++  return (
++    <div className="font-peyda-regular">
++      <div className="mb-4 flex items-center justify-between">
++        <h1 className="text-lg font-semibold">ویژگی‌های محصول</h1>
++        <Link
++          href="/panel/attributes/create"
++          className="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
++        >
++          + ویژگی جدید
++        </Link>
++      </div>
++
++      <div className="rounded-xl border border-border">
++        {isLoading ? (
++          <div className="p-6 text-sm text-muted-foreground">در حال بارگذاری...</div>
++        ) : attributes.length === 0 ? (
++          <div className="flex flex-col items-center gap-2 py-12 text-center">
++            <p className="text-sm text-muted-foreground">
++              هنوز هیچ ویژگی‌ای ثبت نشده
++            </p>
++            <Link
++              href="/panel/attributes/create"
++              className="mt-2 text-sm font-medium text-primary hover:underline"
++            >
++              ساخت اولین ویژگی
++            </Link>
++          </div>
++        ) : (
++          <Table>
++            <TableHeader>
++              <TableRow>
++                <TableHead>نام ویژگی</TableHead>
++                <TableHead>Slug</TableHead>
++                <TableHead>مقادیر</TableHead>
++                <TableHead>قابل فیلتر</TableHead>
++                <TableHead>وضعیت</TableHead>
++                <TableHead>عملیات</TableHead>
++              </TableRow>
++            </TableHeader>
++            <TableBody>
++              {attributes.map((attr: AttributeRow) => (
++                <TableRow key={attr.id}>
++                  <TableCell className="font-medium">
++                    {attributeName(attr)}
++                  </TableCell>
++                  <TableCell>{attr.slug}</TableCell>
++                  <TableCell>
++                    {attr.values.length === 0 ? (
++                      <span className="text-muted-foreground">—</span>
++                    ) : (
++                      <div className="flex flex-wrap gap-1">
++                        {attr.values.map((v) => (
++                          <Badge key={v.id} variant="secondary" size="sm">
++                            {valueLabel(v)}
++                          </Badge>
++                        ))}
++                      </div>
++                    )}
++                  </TableCell>
++                  <TableCell>
++                    {attr.filterable ? (
++                      <Badge variant="success" size="sm">
++                        بله
++                      </Badge>
++                    ) : (
++                      <span className="text-muted-foreground">خیر</span>
++                    )}
++                  </TableCell>
++                  <TableCell>
++                    {attr.published ? (
++                      <Badge variant="success" size="sm">
++                        منتشر
++                      </Badge>
++                    ) : (
++                      <Badge variant="secondary" size="sm">
++                        پیش‌نویس
++                      </Badge>
++                    )}
++                  </TableCell>
++                  <TableCell>
++                    <div className="flex items-center gap-2">
++                      <Link
++                        href={`/panel/attributes/${attr.id}`}
++                        className="text-primary hover:underline"
++                      >
++                        ویرایش
++                      </Link>
++                      <span className="text-muted-foreground">|</span>
++                      <button
++                        onClick={() => {
++                          if (
++                            confirm(
++                              `ویژگی «${attributeName(attr)}» و همه مقادیرش حذف شوند؟`,
++                            )
++                          ) {
++                            deleteMutation.mutate({ id: attr.id });
++                          }
++                        }}
++                        disabled={deleteMutation.isPending}
++                        className="text-destructive hover:underline disabled:opacity-50"
++                      >
++                        حذف
++                      </button>
++                    </div>
++                  </TableCell>
++                </TableRow>
++              ))}
++            </TableBody>
++          </Table>
++        )}
++      </div>
++    </div>
++  );
++}
+diff --git a/components/attribute/AttributeSelector.tsx b/components/attribute/AttributeSelector.tsx
+new file mode 100644
+index 0000000..f21b6d0
+--- /dev/null
++++ b/components/attribute/AttributeSelector.tsx
+@@ -0,0 +1,86 @@
++"use client";
++
++import { useMemo } from "react";
++import { trpc } from "@/lib/trpc/client";
++import { MultiSelect } from "../ui";
++import type { DropdownOption } from "../ui/Dropdown";
++import { attributeName, valueLabel } from "@/lib/attribute";
++
++interface AttributeSelectorProps {
++  /** مقادیر انتخاب‌شده (valueId ها) */
++  value: string[];
++  onChange: (valueIds: string[]) => void;
++}
++
++type AttributeData = {
++  id: string;
++  slug: string;
++  published: boolean;
++  filterable: boolean;
++  translations: { languageId: string; name: string; language?: { code: string } }[];
++  values: {
++    id: string;
++    slug: string;
++    translations: { languageId: string; label: string; language?: { code: string } }[];
++  }[];
++};
++
++/**
++ * نمایش همه‌ی ویژگی‌ها به‌صورت گروهی؛ هر ویژگی یک MultiSelect از مقادیرش.
++ * انتخاب‌ها به‌صورت یک آرایه‌ی یکپارچه از valueId ها مدیریت می‌شود.
++ */
++export function AttributeSelector({ value, onChange }: AttributeSelectorProps) {
++  const { data: attributes = [] } = trpc.attribute.getAll.useQuery();
++
++  const valueSet = useMemo(() => new Set(value), [value]);
++
++  if (attributes.length === 0) {
++    return (
++      <p className="text-sm text-muted-foreground">
++        هنوز ویژگی‌ای تعریف نشده. ابتدا از بخش «ویژگی‌ها» ویژگی بسازید.
++      </p>
++    );
++  }
++
++  return (
++    <div className="space-y-4">
++      {(attributes as AttributeData[]).map((attr) => {
++        const options: DropdownOption[] = attr.values.map((v) => ({
++          value: v.id,
++          label: valueLabel(v),
++        }));
++        const selected = attr.values
++          .filter((v) => valueSet.has(v.id))
++          .map((v) => v.id);
++
++        return (
++          <div key={attr.id} className="space-y-1">
++            <label className="text-sm font-medium">{attributeName(attr)}</label>
++            {options.length === 0 ? (
++              <p className="text-xs text-muted-foreground">
++                این ویژگی مقداری ندارد.
++              </p>
++            ) : (
++              <MultiSelect
++                options={options}
++                value={selected}
++                onChange={(next) => {
++                  // مقدارهای این ویژگی را با انتخاب‌های جدید جایگزین می‌کنیم و
++                  // بقیه‌ی ویژگی‌ها را دست‌نخورده نگه می‌داریم.
++                  const others = value.filter(
++                    (id) => !options.some((o) => o.value === id),
++                  );
++                  onChange([...others, ...next]);
++                }}
++                placeholder={`انتخاب ${attributeName(attr)}`}
++                searchPlaceholder="جستجو..."
++                emptyMessage="مقداری موجود نیست"
++                showChips
++              />
++            )}
++          </div>
++        );
++      })}
++    </div>
++  );
++}
+diff --git a/components/panel/sidebar.tsx b/components/panel/sidebar.tsx
+index 2cb110f..dc59ebb 100644
+--- a/components/panel/sidebar.tsx
++++ b/components/panel/sidebar.tsx
+@@ -14,12 +14,14 @@ import {
+   InboxIcon,
+   FilterIcon,
+   DollarSignIcon,
++  TagsIcon,
+ } from "@/components/ui/icon";
+ 
+ const links = [
+   { href: "/panel", label: "داشبورد", icon: HomeIcon },
+   { href: "/panel/categories", label: "دسته بندی", icon: FilterIcon },
+   { href: "/panel/products", label: "محصولات", icon: PackageIcon },
++  { href: "/panel/attributes", label: "ویژگی‌ها", icon: TagsIcon },
+   { href: "/panel/blogs", label: "بلاگ", icon: FileTextIcon },
+   { href: "/panel/news", label: "اخبار", icon: FileTextIcon },
+   { href: "/panel/articles", label: "مقالات", icon: FileTextIcon },
+diff --git a/components/product/ProductForm.tsx b/components/product/ProductForm.tsx
+index 391ccba..985c1e6 100644
+--- a/components/product/ProductForm.tsx
++++ b/components/product/ProductForm.tsx
+@@ -10,6 +10,7 @@ import { TranslationFields } from "../site/TranslationFields";
+ import { CategoryCascadeSelect } from "../category/CategoryCascadeSelect";
+ import { ImageUploader } from "../../components/ui/mageUploader";
+ import { MultiImageUploader } from "@/components/ui/MultiImageUploader";
++import { AttributeSelector } from "../attribute/AttributeSelector";
+ import { Button } from "../ui";
+ 
+ interface ProductFormProps {
+@@ -55,6 +56,7 @@ export function ProductForm({
+       images: [],
+       categoryId: "",
+       published: true,
++      attributeValueIds: [],
+       translations: [],
+     },
+   });
+@@ -197,6 +199,19 @@ export function ProductForm({
+         />
+       </label>
+ 
++      <hr />
++      <h3>ویژگی‌های محصول</h3>
++      <Controller
++        name="attributeValueIds"
++        control={control}
++        render={({ field }) => (
++          <AttributeSelector
++            value={field.value ?? []}
++            onChange={field.onChange}
++          />
++        )}
++      />
++
+       <hr />
+       <h3>Translations</h3>
+ 
+diff --git a/components/ui/icon/index.tsx b/components/ui/icon/index.tsx
+index 4e25956..f56f74f 100644
+--- a/components/ui/icon/index.tsx
++++ b/components/ui/icon/index.tsx
+@@ -160,3 +160,11 @@ export const DollarSignIcon = make(
+     <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+   </>,
+ );
++export const TagsIcon = make(
++  <>
++    <path d="M15 5h5v5" />
++    <path d="M20 5 9 16" />
++    <path d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" />
++    <path d="m12 17-3.5 3.5a1.5 1.5 0 0 1-2.12 0L3.5 17.62a1.5 1.5 0 0 1 0-2.12L7 12" />
++  </>,
++);
+diff --git a/lib/attribute.ts b/lib/attribute.ts
+new file mode 100644
+index 0000000..9379657
+--- /dev/null
++++ b/lib/attribute.ts
+@@ -0,0 +1,54 @@
++// --- helper های مشترک برای ویژگی‌های محصول ---
++
++type WithLanguage = { languageId: string; language?: { code: string } };
++type AttributeTr = WithLanguage & { name: string };
++type AttributeValueTr = WithLanguage & { label: string };
++
++/**
++ * کد زبانی که برای نمایش نام/برچسب در پنل مدیریت استفاده می‌شود.
++ * پنل تحت [locale] نیست، پس یک اولویت ثابت داریم.
++ */
++export const PANEL_DEFAULT_LANG = "fa";
++
++/** اولین ترجمه‌ی موجود طبق اولویت زبان (پیش‌فرض fa، سپس اولین موجود). */
++export function pickAttributeTranslation(
++  translations: AttributeTr[] = [],
++  preferred = PANEL_DEFAULT_LANG,
++): AttributeTr | undefined {
++  if (!translations.length) return undefined;
++  return (
++    translations.find((t) => t.languageId === preferred) ??
++    translations.find((t) => t.language?.code === preferred) ??
++    translations[0]
++  );
++}
++
++export function pickValueTranslation(
++  translations: AttributeValueTr[] = [],
++  preferred = PANEL_DEFAULT_LANG,
++): AttributeValueTr | undefined {
++  if (!translations.length) return undefined;
++  return (
++    translations.find((t) => t.languageId === preferred) ??
++    translations.find((t) => t.language?.code === preferred) ??
++    translations[0]
++  );
++}
++
++export function attributeName(
++  attribute: { translations: AttributeTr[] },
++  preferred = PANEL_DEFAULT_LANG,
++): string {
++  return pickAttributeTranslation(attribute.translations, preferred)?.name ??
++    attribute.translations[0]?.name ??
++    "";
++}
++
++export function valueLabel(
++  value: { translations: AttributeValueTr[] },
++  preferred = PANEL_DEFAULT_LANG,
++): string {
++  return pickValueTranslation(value.translations, preferred)?.label ??
++    value.translations[0]?.label ??
++    "";
++}
+diff --git a/prisma/migrations/20260823120000_add_product_attributes/migration.sql b/prisma/migrations/20260823120000_add_product_attributes/migration.sql
+new file mode 100644
+index 0000000..9b662fa
+--- /dev/null
++++ b/prisma/migrations/20260823120000_add_product_attributes/migration.sql
+@@ -0,0 +1,103 @@
++-- CreateTable
++CREATE TABLE "public"."Attribute" (
++    "id" TEXT NOT NULL,
++    "slug" TEXT NOT NULL,
++    "published" BOOLEAN NOT NULL DEFAULT true,
++    "filterable" BOOLEAN NOT NULL DEFAULT true,
++    "sortOrder" INTEGER NOT NULL DEFAULT 0,
++    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
++    "updatedAt" TIMESTAMP(3) NOT NULL,
++
++    CONSTRAINT "Attribute_pkey" PRIMARY KEY ("id")
++);
++
++-- CreateTable
++CREATE TABLE "public"."AttributeTranslation" (
++    "id" TEXT NOT NULL,
++    "attributeId" TEXT NOT NULL,
++    "languageId" TEXT NOT NULL,
++    "name" TEXT NOT NULL,
++
++    CONSTRAINT "AttributeTranslation_pkey" PRIMARY KEY ("id")
++);
++
++-- CreateTable
++CREATE TABLE "public"."AttributeValue" (
++    "id" TEXT NOT NULL,
++    "slug" TEXT NOT NULL,
++    "attributeId" TEXT NOT NULL,
++    "sortOrder" INTEGER NOT NULL DEFAULT 0,
++    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
++
++    CONSTRAINT "AttributeValue_pkey" PRIMARY KEY ("id")
++);
++
++-- CreateTable
++CREATE TABLE "public"."AttributeValueTranslation" (
++    "id" TEXT NOT NULL,
++    "valueId" TEXT NOT NULL,
++    "languageId" TEXT NOT NULL,
++    "label" TEXT NOT NULL,
++
++    CONSTRAINT "AttributeValueTranslation_pkey" PRIMARY KEY ("id")
++);
++
++-- CreateTable
++CREATE TABLE "public"."ProductAttributeValue" (
++    "id" TEXT NOT NULL,
++    "productId" TEXT NOT NULL,
++    "valueId" TEXT NOT NULL,
++
++    CONSTRAINT "ProductAttributeValue_pkey" PRIMARY KEY ("id")
++);
++
++-- CreateIndex
++CREATE UNIQUE INDEX "Attribute_slug_key" ON "public"."Attribute"("slug");
++
++-- CreateIndex
++CREATE INDEX "Attribute_published_idx" ON "public"."Attribute"("published");
++
++-- CreateIndex
++CREATE INDEX "Attribute_filterable_idx" ON "public"."Attribute"("filterable");
++
++-- CreateIndex
++CREATE UNIQUE INDEX "AttributeTranslation_attributeId_languageId_key" ON "public"."AttributeTranslation"("attributeId", "languageId");
++
++-- CreateIndex
++CREATE UNIQUE INDEX "AttributeValue_slug_key" ON "public"."AttributeValue"("slug");
++
++-- CreateIndex
++CREATE INDEX "AttributeValue_attributeId_idx" ON "public"."AttributeValue"("attributeId");
++
++-- CreateIndex
++CREATE UNIQUE INDEX "AttributeValueTranslation_valueId_languageId_key" ON "public"."AttributeValueTranslation"("valueId", "languageId");
++
++-- CreateIndex
++CREATE UNIQUE INDEX "ProductAttributeValue_productId_valueId_key" ON "public"."ProductAttributeValue"("productId", "valueId");
++
++-- CreateIndex
++CREATE INDEX "ProductAttributeValue_productId_idx" ON "public"."ProductAttributeValue"("productId");
++
++-- CreateIndex
++CREATE INDEX "ProductAttributeValue_valueId_idx" ON "public"."ProductAttributeValue"("valueId");
++
++-- AddForeignKey
++ALTER TABLE "public"."AttributeTranslation" ADD CONSTRAINT "AttributeTranslation_attributeId_fkey" FOREIGN KEY ("attributeId") REFERENCES "public"."Attribute"("id") ON DELETE CASCADE ON UPDATE CASCADE;
++
++-- AddForeignKey
++ALTER TABLE "public"."AttributeTranslation" ADD CONSTRAINT "AttributeTranslation_languageId_fkey" FOREIGN KEY ("languageId") REFERENCES "public"."Language"("id") ON DELETE CASCADE ON UPDATE CASCADE;
++
++-- AddForeignKey
++ALTER TABLE "public"."AttributeValue" ADD CONSTRAINT "AttributeValue_attributeId_fkey" FOREIGN KEY ("attributeId") REFERENCES "public"."Attribute"("id") ON DELETE CASCADE ON UPDATE CASCADE;
++
++-- AddForeignKey
++ALTER TABLE "public"."AttributeValueTranslation" ADD CONSTRAINT "AttributeValueTranslation_valueId_fkey" FOREIGN KEY ("valueId") REFERENCES "public"."AttributeValue"("id") ON DELETE CASCADE ON UPDATE CASCADE;
++
++-- AddForeignKey
++ALTER TABLE "public"."AttributeValueTranslation" ADD CONSTRAINT "AttributeValueTranslation_languageId_fkey" FOREIGN KEY ("languageId") REFERENCES "public"."Language"("id") ON DELETE CASCADE ON UPDATE CASCADE;
++
++-- AddForeignKey
++ALTER TABLE "public"."ProductAttributeValue" ADD CONSTRAINT "ProductAttributeValue_productId_fkey" FOREIGN KEY ("productId") REFERENCES "public"."Product"("id") ON DELETE CASCADE ON UPDATE CASCADE;
++
++-- AddForeignKey
++ALTER TABLE "public"."ProductAttributeValue" ADD CONSTRAINT "ProductAttributeValue_valueId_fkey" FOREIGN KEY ("valueId") REFERENCES "public"."AttributeValue"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+diff --git a/prisma/schema.prisma b/prisma/schema.prisma
+index 1fbec31..3274de8 100644
+--- a/prisma/schema.prisma
++++ b/prisma/schema.prisma
+@@ -8,16 +8,18 @@ datasource db {
+ }
+ 
+ model Language {
+-  id                   String                @id @default(cuid())
+-  code                 String                @unique
+-  name                 String
+-  enabled              Boolean               @default(true)
+-  sortOrder            Int                   @default(0)
+-  createdAt            DateTime              @default(now())
+-  categoryTranslations CategoryTranslation[]
+-  contentTranslations  ContentTranslation[]
+-  tickerTranslations   PriceTickerTranslation[]
+-  productTranslations  ProductTranslation[]
++  id                       String                       @id @default(cuid())
++  code                     String                       @unique
++  name                     String
++  enabled                  Boolean                      @default(true)
++  sortOrder                Int                          @default(0)
++  createdAt                DateTime                     @default(now())
++  categoryTranslations     CategoryTranslation[]
++  contentTranslations      ContentTranslation[]
++  tickerTranslations       PriceTickerTranslation[]
++  productTranslations      ProductTranslation[]
++  attributeTranslations    AttributeTranslation[]
++  attributeValueTranslations AttributeValueTranslation[]
+ }
+ 
+ model Category {
+@@ -68,6 +70,7 @@ model Product {
+   updatedAt    DateTime             @updatedAt
+   category     Category             @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+   translations ProductTranslation[]
++  attributeValues ProductAttributeValue[]
+ 
+   @@index([categoryId])
+   @@index([published])
+@@ -173,3 +176,77 @@ enum ContentType {
+   NEWS
+   ARTICLE
+ }
++
++// ============================================================================
++//  ویژگی‌های محصول (Attributes)
++//  هر Attribute (مثل رنگ، وزن، جنس) چند مقدار (AttributeValue) دارد و هر مقدار
++//  می‌تواند چندزبانه باشد. ارتباط با محصول از طریق ProductAttributeValue انجام
++//  می‌شود که فقط productId و valueId را نگه می‌دارد (attribute از طریق value قابل
++//  دسترسی است تا از ناسازگاری داده جلوگیری شود).
++// ============================================================================
++
++model Attribute {
++  id          String                 @id @default(cuid())
++  slug        String                 @unique
++  published   Boolean                @default(true)
++  filterable  Boolean                @default(true)
++  sortOrder   Int                    @default(0)
++  createdAt   DateTime               @default(now())
++  updatedAt   DateTime               @updatedAt
++
++  translations AttributeTranslation[]
++  values       AttributeValue[]
++
++  @@index([published])
++  @@index([filterable])
++}
++
++model AttributeTranslation {
++  id          String    @id @default(cuid())
++  attributeId String
++  languageId  String
++  name        String
++  attribute   Attribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
++  language    Language  @relation(fields: [languageId], references: [id], onDelete: Cascade)
++
++  @@unique([attributeId, languageId])
++}
++
++model AttributeValue {
++  id          String                       @id @default(cuid())
++  slug        String                       @unique
++  attributeId String
++  sortOrder   Int                          @default(0)
++  createdAt   DateTime                     @default(now())
++
++  attribute    Attribute                  @relation(fields: [attributeId], references: [id], onDelete: Cascade)
++  translations AttributeValueTranslation[]
++  products     ProductAttributeValue[]
++
++  @@index([attributeId])
++}
++
++model AttributeValueTranslation {
++  id         String          @id @default(cuid())
++  valueId    String
++  languageId String
++  label      String
++  value      AttributeValue  @relation(fields: [valueId], references: [id], onDelete: Cascade)
++  language   Language        @relation(fields: [languageId], references: [id], onDelete: Cascade)
++
++  @@unique([valueId, languageId])
++}
++
++// جدول اتصال محصول ↔ مقدار ویژگی (منبع حقیقتِ نسبت دادن ویژگی‌ها به محصول)
++model ProductAttributeValue {
++  id        String         @id @default(cuid())
++  productId String
++  valueId   String
++
++  product Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
++  value   AttributeValue @relation(fields: [valueId], references: [id], onDelete: Cascade)
++
++  @@unique([productId, valueId])
++  @@index([productId])
++  @@index([valueId])
++}
+diff --git a/server/trpc/routers/_app.ts b/server/trpc/routers/_app.ts
+index bc37d50..b308fe9 100644
+--- a/server/trpc/routers/_app.ts
++++ b/server/trpc/routers/_app.ts
+@@ -9,6 +9,7 @@ import { publicRouter } from "./public";
+ import { contentRouter } from "./content";
+ import { priceTickerRouter } from "./priceTicker";
+ import { contactRequestRouter } from "./contactRequest";
++import { attributeRouter } from "./attribute";
+ export const appRouter = router({
+   health: healthRouter,
+   adminAuth: adminAuthRouter,
+@@ -19,6 +20,7 @@ export const appRouter = router({
+   content: contentRouter,
+   priceTicker: priceTickerRouter,
+   contactRequest: contactRequestRouter,
++  attribute: attributeRouter,
+ });
+ 
+ export type AppRouter = typeof appRouter;
+diff --git a/server/trpc/routers/attribute.ts b/server/trpc/routers/attribute.ts
+new file mode 100644
+index 0000000..6f0bdd8
+--- /dev/null
++++ b/server/trpc/routers/attribute.ts
+@@ -0,0 +1,274 @@
++import { z } from "zod";
++import { TRPCError } from "@trpc/server";
++import { router, publicProcedure, adminProcedure } from "../init";
++
++// --- اسکیمای ترجمه‌ی نام ویژگی ---
++const translationInput = z.object({
++  languageId: z.string(),
++  name: z.string(),
++});
++
++// --- اسکیمای ترجمه‌ی برچسبِ مقدار ویژگی ---
++const valueTranslationInput = z.object({
++  languageId: z.string(),
++  label: z.string(),
++});
++
++// --- اسکیمای یک مقدار ویژگی ---
++const valueInput = z.object({
++  id: z.string().optional(), // فقط هنگام ویرایش برای تطبیق
++  slug: z.string(),
++  sortOrder: z.number().default(0),
++  translations: z.array(valueTranslationInput),
++});
++
++// تضمین یکتایی زبان داخل هر گروه ترجمه + جلوگیری از slug تکراری داخل یک ویژگی
++function validateAttributeInput(input: {
++  translations: { languageId: string }[];
++  values: { slug: string; translations: { languageId: string }[] }[];
++}) {
++  // یکتایی زبان در نام ویژگی
++  const langSeen = new Set<string>();
++  for (const t of input.translations) {
++    if (langSeen.has(t.languageId)) {
++      throw new TRPCError({
++        code: "BAD_REQUEST",
++        message: "برای هر زبان فقط یک نام ویژگی وارد کنید",
++      });
++    }
++    langSeen.add(t.languageId);
++  }
++
++  // یکتایی slug مقادیر + یکتایی زبان داخل هر مقدار
++  const slugSeen = new Set<string>();
++  for (const v of input.values) {
++    if (slugSeen.has(v.slug)) {
++      throw new TRPCError({
++        code: "BAD_REQUEST",
++        message: `slug تکراری برای مقدار: «${v.slug}»`,
++      });
++    }
++    slugSeen.add(v.slug);
++
++    const vLangSeen = new Set<string>();
++    for (const vt of v.translations) {
++      if (vLangSeen.has(vt.languageId)) {
++        throw new TRPCError({
++          code: "BAD_REQUEST",
++          message: `برای هر زبان فقط یک برچسب برای مقدار «${v.slug}» وارد کنید`,
++        });
++      }
++      vLangSeen.add(vt.languageId);
++    }
++  }
++}
++
++export const attributeRouter = router({
++  // لیست همه‌ی ویژگی‌ها همراه با مقادیر و ترجمه‌ها
++  getAll: publicProcedure.query(async ({ ctx }) => {
++    return ctx.prisma.attribute.findMany({
++      orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
++      include: {
++        translations: { include: { language: true } },
++        values: {
++          orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
++          include: {
++            translations: { include: { language: true } },
++          },
++        },
++      },
++    });
++  }),
++
++  // یک ویژگی با تمام جزئیات
++  getById: publicProcedure
++    .input(z.object({ id: z.string() }))
++    .query(async ({ ctx, input }) => {
++      return ctx.prisma.attribute.findUnique({
++        where: { id: input.id },
++        include: {
++          translations: { include: { language: true } },
++          values: {
++            orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
++            include: {
++              translations: { include: { language: true } },
++            },
++          },
++        },
++      });
++    }),
++
++  create: adminProcedure
++    .input(
++      z.object({
++        slug: z.string(),
++        published: z.boolean().default(true),
++        filterable: z.boolean().default(true),
++        sortOrder: z.number().default(0),
++        translations: z.array(translationInput),
++        values: z.array(valueInput).default([]),
++      }),
++    )
++    .mutation(async ({ ctx, input }) => {
++      try {
++        validateAttributeInput(input);
++
++        return await ctx.prisma.attribute.create({
++          data: {
++            slug: input.slug,
++            published: input.published,
++            filterable: input.filterable,
++            sortOrder: input.sortOrder,
++            translations: { create: input.translations },
++            values: {
++              create: input.values.map((v) => ({
++                slug: v.slug,
++                sortOrder: v.sortOrder,
++                translations: { create: v.translations },
++              })),
++            },
++          },
++          include: {
++            translations: true,
++            values: { include: { translations: true } },
++          },
++        });
++      } catch (error) {
++        if (error instanceof TRPCError) throw error;
++
++        throw new TRPCError({
++          code: "INTERNAL_SERVER_ERROR",
++          message: "خطا در ایجاد ویژگی",
++        });
++      }
++    }),
++
++  update: adminProcedure
++    .input(
++      z.object({
++        id: z.string(),
++        slug: z.string(),
++        published: z.boolean(),
++        filterable: z.boolean(),
++        sortOrder: z.number().default(0),
++        translations: z.array(translationInput),
++        values: z.array(valueInput).default([]),
++      }),
++    )
++    .mutation(async ({ ctx, input }) => {
++      try {
++        validateAttributeInput(input);
++
++        const { id, translations, values, ...rest } = input;
++
++        const exists = await ctx.prisma.attribute.findUnique({
++          where: { id },
++          select: { id: true },
++        });
++        if (!exists) {
++          throw new TRPCError({ code: "NOT_FOUND", message: "ویژگی پیدا نشد" });
++        }
++
++        // ۱) به‌روزرسانی فیلدهای اصلی ویژگی
++        await ctx.prisma.attribute.update({ where: { id }, data: rest });
++
++        // ۲) upsert ترجمه‌های نام ویژگی
++        for (const translation of translations) {
++          await ctx.prisma.attributeTranslation.upsert({
++            where: {
++              attributeId_languageId: {
++                attributeId: id,
++                languageId: translation.languageId,
++              },
++            },
++            update: { name: translation.name },
++            create: { attributeId: id, ...translation },
++          });
++        }
++
++        // ۳) مدیریت مقادیر: حذفِ حذف‌شده‌ها، upsert موجودها، ساخت جدیدها
++        const incomingIds = values
++          .map((v) => v.id)
++          .filter((v): v is string => Boolean(v));
++
++        // مقادیری که دیگر در لیست ورودی نیستند → حذف (کِیسکِید ترجمه‌ها را هم می‌برد)
++        await ctx.prisma.attributeValue.deleteMany({
++          where: {
++            attributeId: id,
++            id: { notIn: incomingIds },
++          },
++        });
++
++        for (const v of values) {
++          if (v.id) {
++            // مقدار موجود → به‌روزرسانی + upsert ترجمه‌ها
++            await ctx.prisma.attributeValue.update({
++              where: { id: v.id },
++              data: { slug: v.slug, sortOrder: v.sortOrder },
++            });
++            for (const vt of v.translations) {
++              await ctx.prisma.attributeValueTranslation.upsert({
++                where: {
++                  valueId_languageId: {
++                    valueId: v.id,
++                    languageId: vt.languageId,
++                  },
++                },
++                update: { label: vt.label },
++                create: { valueId: v.id, ...vt },
++              });
++            }
++          } else {
++            // مقدار جدید → ساخت
++            await ctx.prisma.attributeValue.create({
++              data: {
++                attributeId: id,
++                slug: v.slug,
++                sortOrder: v.sortOrder,
++                translations: { create: v.translations },
++              },
++            });
++          }
++        }
++
++        // پاکسازی ترجمه‌های نامِ زبان‌هایی که دیگر در لیست نیستند (اختیاری برای تمیزی)
++        const incomingLangIds = translations.map((t) => t.languageId);
++        await ctx.prisma.attributeTranslation.deleteMany({
++          where: { attributeId: id, languageId: { notIn: incomingLangIds } },
++        });
++
++        return true;
++      } catch (error) {
++        if (error instanceof TRPCError) throw error;
++
++        throw new TRPCError({
++          code: "INTERNAL_SERVER_ERROR",
++          message: "خطا در بروزرسانی ویژگی",
++        });
++      }
++    }),
++
++  delete: adminProcedure
++    .input(z.object({ id: z.string() }))
++    .mutation(async ({ ctx, input }) => {
++      try {
++        const exists = await ctx.prisma.attribute.findUnique({
++          where: { id: input.id },
++          select: { id: true },
++        });
++        if (!exists) {
++          throw new TRPCError({ code: "NOT_FOUND", message: "ویژگی پیدا نشد" });
++        }
++
++        await ctx.prisma.attribute.delete({ where: { id: input.id } });
++        return true;
++      } catch (error) {
++        if (error instanceof TRPCError) throw error;
++
++        throw new TRPCError({
++          code: "INTERNAL_SERVER_ERROR",
++          message: "خطا در حذف ویژگی",
++        });
++      }
++    }),
++});
+diff --git a/server/trpc/routers/product.ts b/server/trpc/routers/product.ts
+index 3056cdf..519c8d3 100644
+--- a/server/trpc/routers/product.ts
++++ b/server/trpc/routers/product.ts
+@@ -92,6 +92,17 @@ export const productRouter = router({
+                 language: true,
+               },
+             },
++
++            attributeValues: {
++              include: {
++                value: {
++                  include: {
++                    attribute: { include: { translations: true } },
++                    translations: true,
++                  },
++                },
++              },
++            },
+           },
+         }),
+ 
+@@ -121,6 +132,16 @@ export const productRouter = router({
+         include: {
+           category: { include: { translations: true } },
+           translations: true,
++          attributeValues: {
++            include: {
++              value: {
++                include: {
++                  attribute: { include: { translations: true } },
++                  translations: true,
++                },
++              },
++            },
++          },
+         },
+       });
+     }),
+@@ -133,11 +154,25 @@ export const productRouter = router({
+         images: z.array(z.string()).default([]),
+         categoryId: z.string(),
+         published: z.boolean(),
++        attributeValueIds: z.array(z.string()).default([]),
+         translations: z.array(translationInput),
+       }),
+     )
+     .mutation(async ({ ctx, input }) => {
+       try {
++        // اعتبارسنجیِ وجودِ valueId ها برای جلوگیری از نسبت‌دادن مقدار نامعتبر
++        if (input.attributeValueIds.length) {
++          const count = await ctx.prisma.attributeValue.count({
++            where: { id: { in: input.attributeValueIds } },
++          });
++          if (count !== input.attributeValueIds.length) {
++            throw new TRPCError({
++              code: "BAD_REQUEST",
++              message: "یک یا چند مقدار ویژگی نامعتبر است",
++            });
++          }
++        }
++
+         return ctx.prisma.product.create({
+           data: {
+             slug: input.slug,
+@@ -146,6 +181,9 @@ export const productRouter = router({
+             categoryId: input.categoryId,
+             published: input.published,
+             translations: { create: input.translations },
++            attributeValues: {
++              create: input.attributeValueIds.map((valueId) => ({ valueId })),
++            },
+           },
+         });
+       } catch (error: any) {
+@@ -165,18 +203,46 @@ export const productRouter = router({
+         images: z.array(z.string()).default([]),
+         categoryId: z.string(),
+         published: z.boolean(),
++        attributeValueIds: z.array(z.string()).default([]),
+         translations: z.array(translationInput),
+       }),
+     )
+     .mutation(async ({ ctx, input }) => {
+       try {
+-        const { id, translations, ...productData } = input;
++        const { id, translations, attributeValueIds, ...productData } = input;
++
++        // اعتبارسنجیِ valueId ها
++        if (attributeValueIds.length) {
++          const count = await ctx.prisma.attributeValue.count({
++            where: { id: { in: attributeValueIds } },
++          });
++          if (count !== attributeValueIds.length) {
++            throw new TRPCError({
++              code: "BAD_REQUEST",
++              message: "یک یا چند مقدار ویژگی نامعتبر است",
++            });
++          }
++        }
+ 
+         await ctx.prisma.product.update({
+           where: { id },
+           data: productData,
+         });
+ 
++        // همگام‌سازی تمیزِ ویژگی‌های محصول: حذف همه + ساخت مجدد مقادیر جدید
++        await ctx.prisma.productAttributeValue.deleteMany({
++          where: { productId: id },
++        });
++        if (attributeValueIds.length) {
++          await ctx.prisma.productAttributeValue.createMany({
++            data: attributeValueIds.map((valueId) => ({
++              productId: id,
++              valueId,
++            })),
++            skipDuplicates: true,
++          });
++        }
++
+         for (const translation of translations) {
+           await ctx.prisma.productTranslation.upsert({
+             where: {
+diff --git a/server/trpc/routers/public.ts b/server/trpc/routers/public.ts
+index 188a30c..85bae6d 100644
+--- a/server/trpc/routers/public.ts
++++ b/server/trpc/routers/public.ts
+@@ -107,6 +107,32 @@ export const publicRouter = router({
+           product: {
+             include: {
+               category: true,
++              attributeValues: {
++                include: {
++                  value: {
++                    include: {
++                      attribute: {
++                        include: {
++                          translations: {
++                            where: {
++                              language: {
++                                code: input.locale,
++                              },
++                            },
++                          },
++                        },
++                      },
++                      translations: {
++                        where: {
++                          language: {
++                            code: input.locale,
++                          },
++                        },
++                      },
++                    },
++                  },
++                },
++              },
+             },
+           },
+ 
+@@ -296,6 +322,11 @@ export const publicRouter = router({
+ 
+         search: z.string().optional(),
+ 
++        // فیلتر ویژگی‌ها: کلید = attributeId، مقدار = لیست valueId های انتخاب‌شده
++        attributeFilters: z
++          .record(z.string(), z.array(z.string()))
++          .optional(),
++
+         page: z.number().min(1).default(1),
+ 
+         limit: z.number().min(1).max(100).default(12),
+@@ -339,6 +370,16 @@ export const publicRouter = router({
+         translation.category.id,
+       );
+ 
++      // ساخت شرط‌های فیلتر: برای هر ویژگی، محصول باید حداقل یکی از مقادیر
++      // انتخاب‌شده را داشته باشد (AND بین ویژگی‌های مختلف).
++      const filterEntries = Object.entries(input.attributeFilters ?? {}).filter(
++        ([, valueIds]) => Array.isArray(valueIds) && valueIds.length > 0,
++      );
++
++      const attributeAndClauses = filterEntries.map(([, valueIds]) => ({
++        attributeValues: { some: { valueId: { in: valueIds } } },
++      }));
++
+       const where = {
+         published: true,
+ 
+@@ -346,6 +387,10 @@ export const publicRouter = router({
+           in: categoryIds,
+         },
+ 
++        ...(attributeAndClauses.length > 0
++          ? { AND: attributeAndClauses }
++          : {}),
++
+         ...(input.search?.trim()
+           ? {
+               translations: {
+@@ -379,6 +424,32 @@ export const publicRouter = router({
+               },
+             },
+           },
++          attributeValues: {
++            include: {
++              value: {
++                include: {
++                  attribute: {
++                    include: {
++                      translations: {
++                        where: {
++                          language: {
++                            code: input.locale,
++                          },
++                        },
++                      },
++                    },
++                  },
++                  translations: {
++                    where: {
++                      language: {
++                        code: input.locale,
++                      },
++                    },
++                  },
++                },
++              },
++            },
++          },
+         },
+ 
+         skip: (input.page - 1) * input.limit,
+@@ -404,6 +475,36 @@ export const publicRouter = router({
+         totalPages: Math.ceil(total / input.limit),
+       };
+     }),
++
++  // ویژگی‌های قابل‌فیلتر برای نمایش در صفحه محصولات (فقط filterable & published)
++  getFilterableAttributes: publicProcedure
++    .input(
++      z.object({
++        locale: z.string(),
++      }),
++    )
++    .query(async ({ ctx, input }) => {
++      return ctx.prisma.attribute.findMany({
++        where: {
++          published: true,
++          filterable: true,
++        },
++        orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
++        include: {
++          translations: {
++            where: { language: { code: input.locale } },
++          },
++          values: {
++            orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
++            include: {
++              translations: {
++                where: { language: { code: input.locale } },
++              },
++            },
++          },
++        },
++      });
++    }),
+   searchProducts: publicProcedure
+     .input(
+       z.object({
+diff --git a/types/attribute.ts b/types/attribute.ts
+new file mode 100644
+index 0000000..ee35be2
+--- /dev/null
++++ b/types/attribute.ts
+@@ -0,0 +1,34 @@
++import { z } from "zod";
++
++// --- ترجمه‌ی نام ویژگی (Attribute) به ازای هر زبان ---
++export const attributeTranslationSchema = z.object({
++  languageId: z.string().min(1, "Required"),
++  name: z.string().min(1, "نام ویژگی الزامی است"),
++});
++
++// --- ترجمه‌ی برچسبِ مقدار ویژگی (AttributeValue) به ازای هر زبان ---
++export const attributeValueTranslationSchema = z.object({
++  languageId: z.string().min(1, "Required"),
++  label: z.string().min(1, "برچسب مقدار الزامی است"),
++});
++
++// --- یک مقدار از ویژگی (مثلاً: آبی، قرمز، مشکی) ---
++export const attributeValueSchema = z.object({
++  id: z.string().optional(), // فقط در حالت ویرایش برای تطبیق مقدار موجود
++  slug: z.string().min(1, "Slug مقدار الزامی است"),
++  sortOrder: z.number().default(0),
++  translations: z.array(attributeValueTranslationSchema).min(1),
++});
++
++// --- کل فرمِ ساخت/ویرایش ویژگی ---
++export const attributeSchema = z.object({
++  slug: z.string().min(1, "Slug الزامی است"),
++  published: z.boolean(),
++  filterable: z.boolean(),
++  sortOrder: z.number().default(0),
++  translations: z.array(attributeTranslationSchema).min(1),
++  values: z.array(attributeValueSchema),
++});
++
++export type AttributeFormValues = z.infer<typeof attributeSchema>;
++export type AttributeValueFormValues = z.infer<typeof attributeValueSchema>;
+diff --git a/types/product.ts b/types/product.ts
+index 78b9159..0da46ea 100644
+--- a/types/product.ts
++++ b/types/product.ts
+@@ -17,6 +17,7 @@ export const productSchema = z.object({
+   images: z.array(z.string()).default([]),
+   categoryId: z.string().min(1, "انتخاب کتگوری اجباری است"), // اجباری، هر عمقی از درخت
+   published: z.boolean(),
++  attributeValueIds: z.array(z.string()).default([]), // مقادیر ویژگی‌های انتخاب‌شده برای محصول
+   translations: z.array(productTranslationSchema),
+ });
+ 

@@ -107,6 +107,32 @@ export const publicRouter = router({
           product: {
             include: {
               category: true,
+              attributeValues: {
+                include: {
+                  value: {
+                    include: {
+                      attribute: {
+                        include: {
+                          translations: {
+                            where: {
+                              language: {
+                                code: input.locale,
+                              },
+                            },
+                          },
+                        },
+                      },
+                      translations: {
+                        where: {
+                          language: {
+                            code: input.locale,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
             },
           },
 
@@ -296,6 +322,11 @@ export const publicRouter = router({
 
         search: z.string().optional(),
 
+        // فیلتر ویژگی‌ها: کلید = attributeId، مقدار = لیست valueId های انتخاب‌شده
+        attributeFilters: z
+          .record(z.string(), z.array(z.string()))
+          .optional(),
+
         page: z.number().min(1).default(1),
 
         limit: z.number().min(1).max(100).default(12),
@@ -339,12 +370,26 @@ export const publicRouter = router({
         translation.category.id,
       );
 
+      // ساخت شرط‌های فیلتر: برای هر ویژگی، محصول باید حداقل یکی از مقادیر
+      // انتخاب‌شده را داشته باشد (AND بین ویژگی‌های مختلف).
+      const filterEntries = Object.entries(input.attributeFilters ?? {}).filter(
+        ([, valueIds]) => Array.isArray(valueIds) && valueIds.length > 0,
+      );
+
+      const attributeAndClauses = filterEntries.map(([, valueIds]) => ({
+        attributeValues: { some: { valueId: { in: valueIds } } },
+      }));
+
       const where = {
         published: true,
 
         categoryId: {
           in: categoryIds,
         },
+
+        ...(attributeAndClauses.length > 0
+          ? { AND: attributeAndClauses }
+          : {}),
 
         ...(input.search?.trim()
           ? {
@@ -379,6 +424,32 @@ export const publicRouter = router({
               },
             },
           },
+          attributeValues: {
+            include: {
+              value: {
+                include: {
+                  attribute: {
+                    include: {
+                      translations: {
+                        where: {
+                          language: {
+                            code: input.locale,
+                          },
+                        },
+                      },
+                    },
+                  },
+                  translations: {
+                    where: {
+                      language: {
+                        code: input.locale,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
 
         skip: (input.page - 1) * input.limit,
@@ -403,6 +474,36 @@ export const publicRouter = router({
 
         totalPages: Math.ceil(total / input.limit),
       };
+    }),
+
+  // ویژگی‌های قابل‌فیلتر برای نمایش در صفحه محصولات (فقط filterable & published)
+  getFilterableAttributes: publicProcedure
+    .input(
+      z.object({
+        locale: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      return ctx.prisma.attribute.findMany({
+        where: {
+          published: true,
+          filterable: true,
+        },
+        orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
+        include: {
+          translations: {
+            where: { language: { code: input.locale } },
+          },
+          values: {
+            orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+            include: {
+              translations: {
+                where: { language: { code: input.locale } },
+              },
+            },
+          },
+        },
+      });
     }),
   searchProducts: publicProcedure
     .input(

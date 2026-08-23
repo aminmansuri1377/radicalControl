@@ -8,16 +8,18 @@ datasource db {
 }
 
 model Language {
-  id                   String                @id @default(cuid())
-  code                 String                @unique
-  name                 String
-  enabled              Boolean               @default(true)
-  sortOrder            Int                   @default(0)
-  createdAt            DateTime              @default(now())
-  categoryTranslations CategoryTranslation[]
-  contentTranslations  ContentTranslation[]
-  tickerTranslations   PriceTickerTranslation[]
-  productTranslations  ProductTranslation[]
+  id                       String                       @id @default(cuid())
+  code                     String                       @unique
+  name                     String
+  enabled                  Boolean                      @default(true)
+  sortOrder                Int                          @default(0)
+  createdAt                DateTime                     @default(now())
+  categoryTranslations     CategoryTranslation[]
+  contentTranslations      ContentTranslation[]
+  tickerTranslations       PriceTickerTranslation[]
+  productTranslations      ProductTranslation[]
+  attributeTranslations    AttributeTranslation[]
+  attributeValueTranslations AttributeValueTranslation[]
 }
 
 model Category {
@@ -68,6 +70,7 @@ model Product {
   updatedAt    DateTime             @updatedAt
   category     Category             @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   translations ProductTranslation[]
+  attributeValues ProductAttributeValue[]
 
   @@index([categoryId])
   @@index([published])
@@ -172,4 +175,78 @@ enum ContentType {
   BLOG
   NEWS
   ARTICLE
+}
+
+// ============================================================================
+//  ویژگی‌های محصول (Attributes)
+//  هر Attribute (مثل رنگ، وزن، جنس) چند مقدار (AttributeValue) دارد و هر مقدار
+//  می‌تواند چندزبانه باشد. ارتباط با محصول از طریق ProductAttributeValue انجام
+//  می‌شود که فقط productId و valueId را نگه می‌دارد (attribute از طریق value قابل
+//  دسترسی است تا از ناسازگاری داده جلوگیری شود).
+// ============================================================================
+
+model Attribute {
+  id          String                 @id @default(cuid())
+  slug        String                 @unique
+  published   Boolean                @default(true)
+  filterable  Boolean                @default(true)
+  sortOrder   Int                    @default(0)
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+
+  translations AttributeTranslation[]
+  values       AttributeValue[]
+
+  @@index([published])
+  @@index([filterable])
+}
+
+model AttributeTranslation {
+  id          String    @id @default(cuid())
+  attributeId String
+  languageId  String
+  name        String
+  attribute   Attribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+  language    Language  @relation(fields: [languageId], references: [id], onDelete: Cascade)
+
+  @@unique([attributeId, languageId])
+}
+
+model AttributeValue {
+  id          String                       @id @default(cuid())
+  slug        String                       @unique
+  attributeId String
+  sortOrder   Int                          @default(0)
+  createdAt   DateTime                     @default(now())
+
+  attribute    Attribute                  @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+  translations AttributeValueTranslation[]
+  products     ProductAttributeValue[]
+
+  @@index([attributeId])
+}
+
+model AttributeValueTranslation {
+  id         String          @id @default(cuid())
+  valueId    String
+  languageId String
+  label      String
+  value      AttributeValue  @relation(fields: [valueId], references: [id], onDelete: Cascade)
+  language   Language        @relation(fields: [languageId], references: [id], onDelete: Cascade)
+
+  @@unique([valueId, languageId])
+}
+
+// جدول اتصال محصول ↔ مقدار ویژگی (منبع حقیقتِ نسبت دادن ویژگی‌ها به محصول)
+model ProductAttributeValue {
+  id        String         @id @default(cuid())
+  productId String
+  valueId   String
+
+  product Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+  value   AttributeValue @relation(fields: [valueId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, valueId])
+  @@index([productId])
+  @@index([valueId])
 }

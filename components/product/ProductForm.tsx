@@ -10,6 +10,7 @@ import { TranslationFields } from "../site/TranslationFields";
 import { CategoryCascadeSelect } from "../category/CategoryCascadeSelect";
 import { ImageUploader } from "../../components/ui/mageUploader";
 import { MultiImageUploader } from "@/components/ui/MultiImageUploader";
+import { AttributeSelector } from "../attribute/AttributeSelector";
 import { Button } from "../ui";
 
 interface ProductFormProps {
@@ -55,6 +56,7 @@ export function ProductForm({
       images: [],
       categoryId: "",
       published: true,
+      attributeValueIds: [],
       translations: [],
     },
   });
@@ -196,6 +198,19 @@ export function ProductForm({
           )}
         />
       </label>
+
+      <hr />
+      <h3>ویژگی‌های محصول</h3>
+      <Controller
+        name="attributeValueIds"
+        control={control}
+        render={({ field }) => (
+          <AttributeSelector
+            value={field.value ?? []}
+            onChange={field.onChange}
+          />
+        )}
+      />
 
       <hr />
       <h3>Translations</h3>

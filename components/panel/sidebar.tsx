@@ -14,12 +14,14 @@ import {
   InboxIcon,
   FilterIcon,
   DollarSignIcon,
+  TagsIcon,
 } from "@/components/ui/icon";
 
 const links = [
   { href: "/panel", label: "داشبورد", icon: HomeIcon },
   { href: "/panel/categories", label: "دسته بندی", icon: FilterIcon },
   { href: "/panel/products", label: "محصولات", icon: PackageIcon },
+  { href: "/panel/attributes", label: "ویژگی‌ها", icon: TagsIcon },
   { href: "/panel/blogs", label: "بلاگ", icon: FileTextIcon },
   { href: "/panel/news", label: "اخبار", icon: FileTextIcon },
   { href: "/panel/articles", label: "مقالات", icon: FileTextIcon },
