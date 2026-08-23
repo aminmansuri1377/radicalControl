@@ -10,8 +10,8 @@ import {
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "azar-pouyan",
-  description: "azar-pouyan admin & storefront",
+  title: "radicalControl",
+  description: "radicalControl admin & storefront",
 };
 
 export default function RootLayout({
