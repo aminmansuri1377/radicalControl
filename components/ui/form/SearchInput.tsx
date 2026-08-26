@@ -64,7 +64,7 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
           onChange={handleChange}
           placeholder={placeholder}
           className={cn(
-            "w-full rounded-md border border-input bg-input-background ps-9 pe-9 text-foreground shadow-sm transition-colors placeholder:text-muted-foreground",
+            "w-full rounded-full border border-primary bg-input-background ps-9 pe-9 text-foreground shadow-sm transition-colors placeholder:text-muted-foreground",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
             "disabled:cursor-not-allowed disabled:opacity-50",
             SIZES[size],

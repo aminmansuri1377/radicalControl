@@ -21,7 +21,8 @@ const en = {
     "We always love to talk to customers, potential customers, business analysts, and digital freight enthusiasts. To save your time, before contacting us, check if the links below can be helpful or not.",
   hero: {
     brand: "kgacommerce",
-    tagline: "smart trading with instant access to global markets",
+    tagline:
+      "More than one piece, a different solution, move the industry differently",
     description:
       "We are an international trading company that provides industrial goods supply and access to real-time global market data together. Our goal is to simplify the process of purchasing, supplying, and decision-making in global trade.",
     year: "2026",
