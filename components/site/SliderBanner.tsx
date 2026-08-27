@@ -222,7 +222,7 @@ function SliderBanner() {
       </div>
 
       {/* Indicator Dots */}
-      <div className="flex justify-center items-center gap-2 md:mt-6">
+      <div className="flex justify-center items-center gap-2 md:mt-6 mb-14">
         {slides.map((_, index) => (
           <button
             key={index}

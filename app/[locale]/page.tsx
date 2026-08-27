@@ -32,6 +32,7 @@ import CategorySection from "@/components/site/CategorySection";
 import ExclusiveSale from "@/components/site/ExclusiveSale";
 import SliderBanner from "@/components/site/SliderBanner";
 import OurService from "@/components/site/OurService";
+import WeProvide from "@/components/site/WeProvide";
 
 const Services = [
   {
@@ -97,6 +98,9 @@ export default function HomePage() {
           <ExclusiveSale />
         </StickySection>
         <SliderBanner />
+        <StickySection title="WE CAN PROVIDE">
+          <WeProvide />
+        </StickySection>
         <StickySection title="OUR SERVICES">
           <OurService />
         </StickySection>
