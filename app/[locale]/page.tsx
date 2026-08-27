@@ -100,11 +100,13 @@ export default function HomePage() {
         <StickySection title="OUR SERVICES">
           <OurService />
         </StickySection>
+        <StickySection title="? WHY CHOOS US">
+          <WhyUsSection />
+        </StickySection>
         <OurStory locale={locale} />
         <StatsSection locale={locale} />
 
         <OurPartners />
-        <WhyUsSection />
         <ContactForm />
       </div>
       {/* ===== جستجوی محصولات (بدون تیتر چسبان) ===== */}

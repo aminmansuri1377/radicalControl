@@ -73,45 +73,100 @@ const KeyIcon = () => (
   </svg>
 );
 
-const cards = [
+const cardsData = [
   {
-    icon: <TrophyIcon />,
-    title: "بالاترین کیفیت ساخت",
+    id: 1,
+    title: "همیشه یک قدم جلوتر از نیاز شما",
     description:
-      "لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.",
+      "نیاز پروژه را می‌فهمیم، راهکار مناسب را پیدا می‌کنیم و تا اجرای نهایی در کنار شما می‌مانیم.",
+    icon: (
+      <svg
+        width="32"
+        height="32"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="white"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+      </svg>
+    ),
   },
   {
-    icon: <DiamondIcon />,
-    title: "ارزشمندترین دارایی",
+    id: 2,
+    title: "مشاوره تخصصی رایگان",
     description:
-      "لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.",
+      "تیم متخصص ما آماده ارائه مشاوره رایگان در زمینه انتخاب بهترین تجهیزات برق صنعتی برای پروژه شما است.",
+    icon: (
+      <svg
+        width="32"
+        height="32"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="white"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+      </svg>
+    ),
   },
   {
-    icon: <FlagIcon />,
-    title: "هدفمندی",
+    id: 3,
+    title: "پشتیبانی ۲۴ ساعته",
     description:
-      "لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.",
+      "از لحظه خرید تا نصب و راه‌اندازی، تیم پشتیبانی ما به صورت شبانه‌روزی در خدمت شماست.",
+    icon: (
+      <svg
+        width="32"
+        height="32"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="white"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <circle cx="12" cy="12" r="10" />
+        <polyline points="12 6 12 12 16 14" />
+      </svg>
+    ),
   },
   {
-    icon: <KeyIcon />,
-    title: "بهترین راه حل",
+    id: 4,
+    title: "گارانتی اصالت کالا",
     description:
-      "لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.",
+      "تمامی محصولات ارائه شده دارای گارانتی اصالت و سلامت فیزیکی هستند و با خیال راحت خرید کنید.",
+    icon: (
+      <svg
+        width="32"
+        height="32"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="white"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+      </svg>
+    ),
   },
 ];
 
 export default function WhyUsSection() {
   return (
-    <section className="relative py-20 px-6 md:px-12 lg:px-20 overflow-hidden font-peyda-medium">
+    <section className="relative pb-20 pt-5 px-6 md:px-12 lg:px-20 overflow-hidden font-peyda-medium">
       {/* Content */}
       <div className="relative z-10 max-w-7xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-6">
-          <div className="flex justify-center mb-6">
-            <SectionBorderTitle className="text-gray-900">
-              به من بگو چرا؟
-            </SectionBorderTitle>
-          </div>
+        <div className="text-center mb-28">
+          <h1 className=" font-peyda-black text-3xl my-4">
+            چرا ما را به دیگران ترجیح دهید ؟
+          </h1>
           <p
             className="text-gray-600 text-sm max-w-3xl mx-auto leading-8"
             dir="rtl"
@@ -124,20 +179,15 @@ export default function WhyUsSection() {
 
         {/* Cards with Question Marks */}
         <div className="relative mt-14">
-          {/* Left Question Mark */}
-          <QuestionMark position="left" className="hidden lg:block" />
-
-          {/* Right Question Mark */}
-          <QuestionMark position="right" className="hidden lg:block" />
-
           {/* Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:mx-12">
-            {cards.map((card, index) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:mx-12 ">
+            {cardsData.map((card) => (
               <WhyUsCard
-                key={index}
-                icon={<HexIcon>{card.icon}</HexIcon>}
+                key={card.id}
+                id={card.id}
                 title={card.title}
                 description={card.description}
+                icon={card.icon}
               />
             ))}
           </div>
