@@ -24,11 +24,11 @@ import HowItWorks from "@/components/site/HowItWorks";
 import WhyKga from "@/components/site/WhyKga";
 import LatestArticles from "@/components/site/LatestArticles";
 import StickySection from "../../components/ui/StickySection";
-import ProjectsSection from "@/components/site/ProjectsSection";
 import WhyUsSection from "@/components/site/WhyUsSection";
 import OurPartners from "@/components/site/OurPartners";
 import { ContactForm } from "@/components/contact/ContactForm";
 import StatsSection from "@/components/site/about/StatsSection";
+import CategorySection from "@/components/site/CategorySection";
 
 const Services = [
   {
@@ -86,14 +86,17 @@ export default function HomePage() {
   return (
     <div>
       <Hero locale={locale} />
+      <div className=" border-2 border-primary rounded-t-4xl pt-10">
+        <StickySection title="PRODUCT CATERGORY">
+          <CategorySection withMore />
+        </StickySection>
+        <OurStory locale={locale} />
+        <StatsSection locale={locale} />
 
-      <OurStory locale={locale} />
-      <StatsSection locale={locale} />
-
-      <ProjectsSection withMore />
-      <OurPartners />
-      <WhyUsSection />
-      <ContactForm />
+        <OurPartners />
+        <WhyUsSection />
+        <ContactForm />
+      </div>
       {/* ===== جستجوی محصولات (بدون تیتر چسبان) ===== */}
       <div className="m-20">
         <ProductSearch value={search} onChange={setSearch} />

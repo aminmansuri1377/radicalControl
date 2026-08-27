@@ -1,4 +1,4 @@
-import ProjectsSection from "@/components/site/ProjectsSection";
+import ProjectsSection from "@/components/site/CategorySection";
 import React from "react";
 import Image from "next/image";
 import Office from "../../../public/images/office.jpg";

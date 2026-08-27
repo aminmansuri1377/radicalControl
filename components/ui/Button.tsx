@@ -18,7 +18,7 @@ export type ButtonVariant =
 export type ButtonSize = "xs" | "sm" | "md" | "lg" | "icon";
 
 const BASE =
-  "inline-flex items-center cursor-pointer justify-center gap-2 whitespace-nowrap md:rounded-2xl rounded-xl font-medium font-peyda-regular transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0";
+  "inline-flex items-center cursor-pointer justify-center gap-2 whitespace-nowrap  rounded-full font-medium font-peyda-regular transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0";
 
 const VARIANT: Record<ButtonVariant, string> = {
   primary: "bg-primary text-primary-foreground shadow-xs hover:bg-primary/90",
@@ -30,7 +30,7 @@ const VARIANT: Record<ButtonVariant, string> = {
   warning: "bg-warning text-warning-foreground shadow-sm hover:bg-warning/90",
   info: "bg-info text-info-foreground shadow-sm hover:bg-info/90",
   outline:
-    "border border-input bg-background text-foreground shadow-sm hover:bg-accent hover:text-accent-foreground",
+    "border border-primary text-primary bg-background text-foreground shadow-sm hover:bg-accent hover:text-accent-foreground",
   ghost: "text-foreground hover:bg-accent hover:text-accent-foreground",
   link: "text-primary underline-offset-4 hover:underline",
 };
