@@ -31,6 +31,7 @@ import StatsSection from "@/components/site/about/StatsSection";
 import CategorySection from "@/components/site/CategorySection";
 import ExclusiveSale from "@/components/site/ExclusiveSale";
 import SliderBanner from "@/components/site/SliderBanner";
+import OurService from "@/components/site/OurService";
 
 const Services = [
   {
@@ -96,6 +97,9 @@ export default function HomePage() {
           <ExclusiveSale />
         </StickySection>
         <SliderBanner />
+        <StickySection title="OUR SERVICES">
+          <OurService />
+        </StickySection>
         <OurStory locale={locale} />
         <StatsSection locale={locale} />
 
