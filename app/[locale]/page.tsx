@@ -110,14 +110,7 @@ export default function HomePage() {
         <StickySection title="OUR JOURNEY">
           <OurStory locale={locale} />
         </StickySection>
-        <StatsSection locale={locale} />
-
-        <OurPartners />
-        <ContactForm />
-      </div>
-      {/* ===== جستجوی محصولات (بدون تیتر چسبان) ===== */}
-      <div className="m-20">
-        <ProductSearch value={search} onChange={setSearch} />
+        {/* <StatsSection locale={locale} /> */}
       </div>
 
       {shouldSearch ? (
