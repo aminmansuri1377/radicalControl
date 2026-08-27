@@ -103,7 +103,9 @@ export default function HomePage() {
         <StickySection title="? WHY CHOOS US">
           <WhyUsSection />
         </StickySection>
-        <OurStory locale={locale} />
+        <StickySection title="OUR JOURNEY">
+          <OurStory locale={locale} />
+        </StickySection>
         <StatsSection locale={locale} />
 
         <OurPartners />

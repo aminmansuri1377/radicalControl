@@ -26,7 +26,7 @@ export default function WhyUsCard({
           aria-hidden="true"
           className="absolute inset-0 -z-10 scale-150 rounded-full bg-primary/30 blur-md"
         />
-        <span className="flex h-16 w-16 items-center justify-center rounded-full bg-primary shadow-[0_0_18px_rgba(124,58,237,0.55)]">
+        <span className="flex h-16 w-16 items-center justify-center rounded-full bg-primary shadow-sm shadow-primary">
           {icon}
         </span>
       </div>

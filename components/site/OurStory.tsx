@@ -16,24 +16,13 @@ function OurStory({ locale }: { locale: string }) {
   return (
     <div className="my-20">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-stretch lg:mx-40 md:mx-10 mx-5">
-        <div className="relative w-full h-full min-h-[300px]">
-          {" "}
-          <Image
-            src={OurStoryImage}
-            alt="Our Story"
-            fill
-            className="object-cover "
-          />
-          <div className="absolute inset-3 sm:inset-4 border-2 border-white/70" />
-        </div>
-
         <div className="flex flex-col justify-center h-full">
           <div className="lg:px-10">
-            <SectionBorderTitle>درباره ما</SectionBorderTitle>{" "}
+            <h1 className=" font-peyda-black text-3xl">داستان رادیکال کنترل</h1>{" "}
             <p className="font-peyda-regular text-justify mt-5">
               {t.hero.ourStoryDescription}
             </p>
-            <div className="text-left">
+            <div className="text-right">
               <Button
                 onClick={() => router.push(`/${locale}/contact`)}
                 className="px-14 mt-10"
@@ -42,15 +31,15 @@ function OurStory({ locale }: { locale: string }) {
               </Button>
             </div>
           </div>
-          <div className="relative">
-            <Image
-              src={Outlook}
-              alt="Outlook"
-              width={500}
-              className="mt-5 md:mx-auto"
-            />
-            <div className="absolute inset-3 sm:inset-4 border-2 border-white/70" />
-          </div>
+        </div>
+        <div className="relative w-full h-full min-h-[300px] md:min-h-[400px]">
+          {" "}
+          <Image
+            src={OurStoryImage}
+            alt="Our Story"
+            fill
+            className="object-cover rounded-3xl"
+          />
         </div>
       </div>
     </div>

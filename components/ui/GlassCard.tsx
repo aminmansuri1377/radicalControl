@@ -41,7 +41,7 @@ export function GlassCard({
   return (
     <div
       className={cn(
-        "relative overflow-hidden border",
+        "relative overflow-hidden border p-5 text-center",
         radiusMap[radius],
         blurMap[blur],
         // حالت روشن: دقیقاً مطابق مقدار فیگما rgba(217,217,217,0.2)

@@ -1,6 +1,7 @@
 import React from "react";
 import Image from "next/image";
 import { Button } from "../ui";
+import { GlassCard } from "../ui/GlassCard";
 
 interface ServiceCardProps {
   title: string;
@@ -30,9 +31,8 @@ export default function ServiceCard({
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
 
       {/* کارت شیشه‌ای پایین */}
-      <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
-        <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl p-6 md:p-8 shadow-2xl">
-          {/* عنوان */}
+      <div className="absolute bottom-0 p-6 md:p-8">
+        <GlassCard>
           <h3 className="text-xl md:text-2xl font-bold text-white mb-3 md:mb-4 font-peyda-medium">
             {title}
           </h3>
@@ -46,12 +46,12 @@ export default function ServiceCard({
           <Button
             variant="primary"
             size="sm"
-            className="bg-purple-600 hover:bg-purple-700 text-white px-8 rounded-full transition-all duration-300 w-full md:w-auto"
+            className=" text-white px-8 transition-all duration-300 w-full md:w-auto"
             dir="rtl"
           >
             اطلاعات بیشتر
           </Button>
-        </div>
+        </GlassCard>
       </div>
     </div>
   );
