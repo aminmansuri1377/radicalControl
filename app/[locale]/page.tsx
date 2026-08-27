@@ -30,6 +30,7 @@ import { ContactForm } from "@/components/contact/ContactForm";
 import StatsSection from "@/components/site/about/StatsSection";
 import CategorySection from "@/components/site/CategorySection";
 import ExclusiveSale from "@/components/site/ExclusiveSale";
+import SliderBanner from "@/components/site/SliderBanner";
 
 const Services = [
   {
@@ -94,6 +95,7 @@ export default function HomePage() {
         <StickySection title="Exclusive Sale">
           <ExclusiveSale />
         </StickySection>
+        <SliderBanner />
         <OurStory locale={locale} />
         <StatsSection locale={locale} />
 
