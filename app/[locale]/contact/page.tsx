@@ -1,127 +1,61 @@
-import Image from "next/image";
 import { ContactForm } from "@/components/contact/ContactForm";
 import SectionTitle from "@/components/ui/SectionTitle";
 
+const items = [
+  ["0912-1234-123", "☎"],
+  ["0912-1234-123", "☎"],
+  ["@sample.com", "◎"],
+  ["@sample.com", "◎"],
+  ["@sample.com", "◎"],
+];
+
+function ContactInfo() {
+  return (
+    <div
+      dir="rtl"
+      className="rounded-3xl border border-gray-400 bg-white px-8 py-9 md:px-14"
+    >
+      <h2 className="text-center text-2xl font-peyda-bold md:text-3xl">
+        راه های ارتباطی
+      </h2>
+      <div className="mt-8 space-y-5">
+        {items.map(([value, icon], index) => (
+          <div
+            key={index}
+            className="flex items-center justify-end gap-5 text-lg font-peyda-medium"
+          >
+            <span dir={value.startsWith("0") ? "ltr" : "rtl"}>{value}</span>
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary text-2xl text-white">
+              {icon}
+            </span>
+          </div>
+        ))}
+        <div className="flex items-center justify-end gap-5 pt-4 text-right text-sm leading-7 font-peyda-regular">
+          <p className="max-w-sm">
+            لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و طراحی
+            گرافیک است.
+          </p>
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary text-2xl text-white">
+            ⌾
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ContactPage() {
   return (
-    <div className="min-h-screen mt-20 font-peyda-regular">
-      {/* بخش بالایی - تصویر و معرفی */}
-      <section className="py-16 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div className="text-right space-y-6">
-              <div>
-                <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                  تماس با ما
-                </h2>
-                <h3 className="text-2xl md:text-3xl font-bold  mb-4">
-                  هر خانه، نقطه آغاز یک داستان است
-                </h3>
-                <h4 className="text-xl font-semibold ">
-                  داستان آرامش، امنیت، رشد و آینده
-                </h4>
-              </div>
-
-              <div className="text-gray-600 leading-relaxed space-y-3">
-                <p>
-                  لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و
-                  طراح گرافیک است. طراح گرافیک از این متن برای نمایش فرم و
-                  چیدمان محتوا استفاده می‌کند.
-                </p>
-                <p>
-                  هدف از آن تمرکز بر ظاهر طراحی بدون وابستگی به محتوای واقعی
-                  است. و چیدمان محتوا استفاده می‌کنند.
-                </p>
-                <p>
-                  هدف از آن تمرکز بر ظاهر طراحی بدون وابستگی به محتوای واقعی
-                  است. طراح گرافیک از این متن برای نمایش فرم و چیدمان محتوا
-                  استفاده می‌کند.
-                </p>
-              </div>
-            </div>
-            <div className="relative">
-              <Image
-                src="/images/project2.png"
-                alt="تماس با ما"
-                width={600}
-                height={400}
-                className=" shadow-xl"
-                priority
-              />
-              <div className="absolute inset-3 sm:inset-4 border-2 border-white/70" />
-            </div>
-          </div>
+    <main className="min-h-screen bg-background px-5 pb-24 pt-24 font-peyda-regular md:px-12 lg:px-20">
+      <SectionTitle sticky={false}>CONTACT US</SectionTitle>
+      <div className="mx-auto mt-8 grid max-w-6xl items-stretch gap-5 lg:grid-cols-2">
+        <div className="order-2 rounded-3xl border border-gray-400 bg-white lg:order-1">
+          <ContactForm />
         </div>
-      </section>
-
-      {/* فرم تماس با گرادیانت طلایی */}
-      <ContactForm />
-
-      {/* بخش CONTACT US */}
-      <section className="py-16 px-4">
-        <div className="max-w-4xl mx-auto">
-          <SectionTitle className={""}>CONTACT US</SectionTitle>
-          {/* باکس اطلاعات تماس */}
-          <div className="border-2 border-gray-300 rounded-2xl p-8 md:p-12 bg-white">
-            <h3 className="text-2xl font-bold text-gray-900 text-center mb-10">
-              راه‌های ارتباطی با گروه فنی مهندسی آذر پویان
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {/* ایمیل 1 */}
-              <div className="flex items-center justify-center gap-3 p-4 rounded-xl hover:bg-gray-50 transition-colors">
-                <span className="text-gray-700 font-medium">@sample.com</span>
-                <div className="w-10 h-10 rounded-full bg-[#F6DEA3] flex items-center justify-center"></div>
-              </div>
-
-              {/* وب‌سایت */}
-              <div className="flex items-center justify-center gap-3 p-4 rounded-xl hover:bg-gray-50 transition-colors">
-                <span className="text-gray-700 font-medium">@sample.com</span>
-                <div className="w-10 h-10 rounded-full bg-[#F6DEA3] flex items-center justify-center"></div>
-              </div>
-
-              {/* تلفن 1 */}
-              <div className="flex items-center justify-center gap-3 p-4 rounded-xl hover:bg-gray-50 transition-colors">
-                <span className="text-gray-700 font-medium" dir="ltr">
-                  0912-1234-123
-                </span>
-                <div className="w-10 h-10 rounded-full bg-[#F6DEA3] flex items-center justify-center"></div>
-              </div>
-
-              {/* ایمیل 2 */}
-              <div className="flex items-center justify-center gap-3 p-4 rounded-xl hover:bg-gray-50 transition-colors">
-                <span className="text-gray-700 font-medium">@sample.com</span>
-                <div className="w-10 h-10 rounded-full bg-[#F6DEA3] flex items-center justify-center"></div>
-              </div>
-
-              {/* اینستاگرام */}
-              <div className="flex items-center justify-center gap-3 p-4 rounded-xl hover:bg-gray-50 transition-colors">
-                <span className="text-gray-700 font-medium">@sample.com</span>
-                <div className="w-10 h-10 rounded-full bg-[#F6DEA3] flex items-center justify-center"></div>
-              </div>
-
-              {/* تلفن 2 */}
-              <div className="flex items-center justify-center gap-3 p-4 rounded-xl hover:bg-gray-50 transition-colors">
-                <span className="text-gray-700 font-medium" dir="ltr">
-                  0912-1234-123
-                </span>
-                <div className="w-10 h-10 rounded-full bg-[#F6DEA3] flex items-center justify-center"></div>
-              </div>
-            </div>
-
-            {/* آدرس */}
-            <div className="mt-10 pt-8 border-t border-gray-200">
-              <div className="flex items-center justify-center gap-3">
-                <p className="text-gray-600 text-center">
-                  لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و
-                  طراحی گرافیک است.
-                </p>
-                <div className="w-10 h-10 rounded-full bg-[#F6DEA3] flex items-center justify-center flex-shrink-0"></div>
-              </div>
-            </div>
-          </div>
+        <div className="order-1 lg:order-2">
+          <ContactInfo />
         </div>
-      </section>
-    </div>
+      </div>
+    </main>
   );
 }

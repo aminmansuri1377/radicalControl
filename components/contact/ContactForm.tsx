@@ -53,186 +53,166 @@ export function ContactForm() {
     });
   };
 
+  const inputClass = (error?: boolean) =>
+    `w-full rounded-full border bg-white px-6 py-3 text-right text-gray-800
+    placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-primary
+    transition-all ${error ? "border-red-500" : "border-gray-900"}`;
+
   return (
-    <section className="py-16 px-4 font-peyda-medium">
-      <div
-        className="max-w-5xl mx-auto rounded-3xl p-10 md:px-14"
-        style={{
-          background: "linear-gradient(to left, #C8A24A, #F6DEA3)",
-        }}
-      >
-        {/* عنوان */}
-        <div className="text-center mb-10">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
-            {"تماس با ما"}
+    <section className="p-0 font-peyda-medium" dir="rtl">
+      <div className="mx-auto rounded-3xl bg-white p-7 md:p-10">
+        <div className="mb-8 text-center">
+          <h2 className="mb-3 text-2xl font-peyda-bold text-gray-900 md:text-3xl">
+            فرم اطلاعات
           </h2>
-          <p className="text-gray-800 text-lg">
-            {"شما می‌توانید در این قسمت ما با در تماس باشید"}
-          </p>
         </div>
 
-        {/* فرم */}
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* پیام خطا */}
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {Object.keys(errors).length > 0 && (
-            <div className="rounded-xl border border-red-300 bg-red-50/90 p-3 text-sm text-red-600 text-center">
-              {"ارسال پیام با شکست مواجه شد."}
+            <div className="rounded-xl border border-red-300 bg-red-50 p-3 text-center text-sm text-red-600">
+              ارسال پیام با شکست مواجه شد.
             </div>
           )}
 
-          {/* ردیف نام و ایمیل */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* نام و نام خانوادگی */}
-            <div>
-              <label
-                htmlFor="fullName"
-                className="block text-right text-gray-800 font-medium mb-2"
-              >
-                {"نام و نام خانوادگی :"}
-              </label>
-              <input
-                id="fullName"
-                type="text"
-                placeholder={"نام خود را وارد کنید"}
-                className={`w-full px-5 py-3.5 rounded-lg bg-[#F0E4C4] border text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#C8A24A] focus:border-transparent transition-all ${
-                  errors.fullName ? "border-red-400" : "border-[#D4B96A]"
-                }`}
-                {...register("fullName")}
-              />
-              {errors.fullName && (
-                <p className="text-red-600 text-sm mt-1 text-right">
-                  {errors.fullName.message}
-                </p>
-              )}
-            </div>
+          {/* نام و نام خانوادگی */}
+          <div>
+            <label htmlFor="fullName" className="sr-only">
+              نام و نام خانوادگی
+            </label>
 
-            {/* ایمیل */}
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-right text-gray-800 font-medium mb-2"
-              >
-                {"ایمیل :"}
-              </label>
-              <input
-                id="email"
-                type="email"
-                dir="ltr"
-                placeholder="example@email.com"
-                className={`w-full px-5 py-3.5 rounded-lg bg-[#F0E4C4] border text-gray-800 placeholder-gray-500 text-right focus:outline-none focus:ring-2 focus:ring-[#C8A24A] focus:border-transparent transition-all ${
-                  errors.email ? "border-red-400" : "border-[#D4B96A]"
-                }`}
-                {...register("email")}
-              />
-              {errors.email && (
-                <p className="text-red-600 text-sm mt-1 text-right">
-                  {errors.email.message}
-                </p>
-              )}
-            </div>
+            <input
+              id="fullName"
+              type="text"
+              placeholder="نام و نام خانوادگی"
+              className={inputClass(!!errors.fullName)}
+              {...register("fullName")}
+            />
+
+            {errors.fullName && (
+              <p className="mt-1 text-right text-sm text-red-600">
+                {errors.fullName.message}
+              </p>
+            )}
           </div>
 
-          {/* ردیف شرکت و تلفن */}
-          {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label
-                htmlFor="companyName"
-                className="block text-right text-gray-800 font-medium mb-2"
-              >
-                {"نام شرکت :"}
-              </label>
-              <input
-                id="companyName"
-                type="text"
-                placeholder={"نام شرکت خود را وارد کنید"}
-                className={`w-full px-5 py-3.5 rounded-lg bg-[#F0E4C4] border text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#C8A24A] focus:border-transparent transition-all ${
-                  errors.companyName ? "border-red-400" : "border-[#D4B96A]"
-                }`}
-                {...register("companyName")}
-              />
-              {errors.companyName && (
-                <p className="text-red-600 text-sm mt-1 text-right">
-                  {errors.companyName.message}
-                </p>
-              )}
-            </div>
+          {/* شماره تماس */}
+          <div>
+            <label htmlFor="phone" className="sr-only">
+              شماره تماس
+            </label>
 
-            <div>
-              <label
-                htmlFor="phone"
-                className="block text-right text-gray-800 font-medium mb-2"
-              >
-                {"تلفن :"}
-              </label>
-              <input
-                id="phone"
-                type="tel"
-                dir="ltr"
-                placeholder="09123456789"
-                className={`w-full px-5 py-3.5 rounded-lg bg-[#F0E4C4] border text-gray-800 placeholder-gray-500 text-right focus:outline-none focus:ring-2 focus:ring-[#C8A24A] focus:border-transparent transition-all ${
-                  errors.phone ? "border-red-400" : "border-[#D4B96A]"
-                }`}
-                {...register("phone")}
-              />
-              {errors.phone && (
-                <p className="text-red-600 text-sm mt-1 text-right">
-                  {errors.phone.message}
-                </p>
-              )}
-            </div>
-          </div> */}
+            <input
+              id="phone"
+              type="tel"
+              dir="ltr"
+              placeholder="شماره تماس"
+              className={`${inputClass(!!errors.phone)} text-right`}
+              {...register("phone")}
+            />
+
+            {errors.phone && (
+              <p className="mt-1 text-right text-sm text-red-600">
+                {errors.phone.message}
+              </p>
+            )}
+          </div>
+
+          {/* ایمیل */}
+          <div>
+            <label htmlFor="email" className="sr-only">
+              ایمیل
+            </label>
+
+            <input
+              id="email"
+              type="email"
+              dir="ltr"
+              placeholder="ایمیل"
+              className={`${inputClass(!!errors.email)} text-right`}
+              {...register("email")}
+            />
+
+            {errors.email && (
+              <p className="mt-1 text-right text-sm text-red-600">
+                {errors.email.message}
+              </p>
+            )}
+          </div>
+
+          {/* نام شرکت */}
+          <div>
+            <label htmlFor="companyName" className="sr-only">
+              نام شرکت
+            </label>
+
+            <input
+              id="companyName"
+              type="text"
+              placeholder="نام شرکت"
+              className={inputClass(!!errors.companyName)}
+              {...register("companyName")}
+            />
+
+            {errors.companyName && (
+              <p className="mt-1 text-right text-sm text-red-600">
+                {errors.companyName.message}
+              </p>
+            )}
+          </div>
 
           {/* موضوع */}
-          {/* <div>
-            <label
-              htmlFor="subject"
-              className="block text-right text-gray-800 font-medium mb-2"
-            >
-              {"موضوع :"}
+          <div>
+            <label htmlFor="subject" className="sr-only">
+              موضوع
             </label>
+
             <input
               id="subject"
               type="text"
-              placeholder={"موضوع پیام خود را وارد کنید"}
-              className={`w-full px-5 py-3.5 rounded-lg bg-[#F0E4C4] border text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#C8A24A] focus:border-transparent transition-all ${
-                errors.subject ? "border-red-400" : "border-[#D4B96A]"
-              }`}
+              placeholder="موضوع پیام"
+              className={inputClass(!!errors.subject)}
               {...register("subject")}
             />
+
             {errors.subject && (
-              <p className="text-red-600 text-sm mt-1 text-right">
+              <p className="mt-1 text-right text-sm text-red-600">
                 {errors.subject.message}
               </p>
             )}
-          </div> */}
+          </div>
 
-          {/* پیام */}
+          {/* توضیحات */}
           <div>
-            {/* <label
-              htmlFor="message"
-              className="block text-right text-gray-800 font-medium mb-2"
-            >
-              {"پیام شما به پویان :"}
-            </label> */}
+            <label htmlFor="message" className="sr-only">
+              توضیحات
+            </label>
+
             <textarea
               id="message"
-              rows={8}
-              placeholder={"پیام خود را بنویسید..."}
-              className={`w-full px-5 py-4 rounded-lg bg-[#F0E4C4] border text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#C8A24A] focus:border-transparent transition-all resize-none ${
-                errors.message ? "border-red-400" : "border-[#D4B96A]"
+              rows={1}
+              placeholder="توضیحات"
+              className={`w-full resize-none rounded-full border bg-white px-6 py-3
+              text-right text-gray-800 placeholder:text-gray-600
+              focus:outline-none focus:ring-2 focus:ring-primary transition-all ${
+                errors.message ? "border-red-500" : "border-gray-900"
               }`}
               {...register("message")}
             />
+
             {errors.message && (
-              <p className="text-red-600 text-sm mt-1 text-right">
+              <p className="mt-1 text-right text-sm text-red-600">
                 {errors.message.message}
               </p>
             )}
           </div>
 
           {/* دکمه ارسال */}
-          <div className="flex justify-center">
-            <Button type="submit" disabled={mutation.isPending}>
+          <div className="pt-1">
+            <Button
+              type="submit"
+              disabled={mutation.isPending}
+              className="w-full rounded-full bg-primary"
+            >
               {mutation.isPending ? "در حال ارسال..." : "ارسال اطلاعات"}
             </Button>
           </div>
