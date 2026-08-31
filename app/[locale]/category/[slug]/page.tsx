@@ -47,7 +47,7 @@ export default function CategoryPage() {
   return (
     <main
       dir="rtl"
-      className="min-h-screen bg-white px-5 pb-12 pt-8 font-PeydaRegular text-[#151515] lg:px-16"
+      className=" mt-10 md:mt-16 min-h-screen bg-white px-5 pb-12 pt-8 font-peyda-regular text-[#151515] lg:px-16"
     >
       <section
         className="mx-auto flex max-w-6xl flex-col-reverse items-center gap-8 py-4 md:flex-row md:justify-between md:gap-16"
@@ -115,7 +115,7 @@ export default function CategoryPage() {
         <h2 className="mb-5 text-right font-PeydaBlack text-2xl">
           محصولات این دسته
         </h2>
-        <div className="grid grid-cols-2 gap-2 lg:grid-cols-[190px_1fr]">
+        <div className="grid md:grid-cols-2 gap-2 lg:grid-cols-[190px_1fr]">
           <aside className="rounded-xl">
             {" "}
             <AttributeFilter
