@@ -38,7 +38,7 @@ export default function AboutUs({ locale }: { locale: string }) {
   return (
     <div
       dir="rtl"
-      className="mx-auto max-w-6xl px-5 pb-20 pt-16 md:px-12 lg:px-20"
+      className="mx-auto max-w-6xl px-2 pb-20 pt-16 md:px-12 lg:px-20"
     >
       <section className="grid items-center gap-10 py-10 md:grid-cols-2 md:py-14">
         <div className="order-2 md:order-1">

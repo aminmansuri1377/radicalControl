@@ -53,7 +53,14 @@
  *       Setting `dir="rtl"` on <html> flips them automatically — no extra CSS.
  * ============================================================================
  */
-
+/* استفاده در cardSlider برای مخفی کردن اسکرول‌بار افقی موبایل */
+.scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
 /* --- Light theme (default) ------------------------------------------------- */
 :root {
   --background: ##ffffff;

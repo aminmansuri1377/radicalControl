@@ -21,7 +21,7 @@ export default function CategoryCard({
 
   return (
     <div
-      className={`group relative rounded-2xl overflow-hidden shadow-lg transition-all duration-300 hover:shadow-2xl h-[250px] md:h-[300px] ${className}`}
+      className={`group relative rounded-2xl overflow-hidden shadow-lg transition-all duration-300 hover:shadow-2xl h-[175px] md:h-[300px] ${className}`}
     >
       {/* Background Image - کل کارت */}
       <Image
@@ -38,7 +38,7 @@ export default function CategoryCard({
       <div className="absolute right-0 top-1/2 -translate-y-1/2 z-10 flex flex-col items-end gap-4 md:gap-6 p-6 md:p-8 w-1/2">
         {/* Title */}
         <h3
-          className={`text-xl md:text-2xl font-bold text-right font-peyda-medium leading-tight ${
+          className={`text-xl md:text-2xl text-justify font-bold md:text-right font-peyda-medium leading-tight ${
             isDark ? "text-white" : "text-black"
           }`}
         >
@@ -46,7 +46,7 @@ export default function CategoryCard({
         </h3>
 
         {/* Buttons */}
-        <div className="flex flex-row gap-2 md:gap-3">
+        <div className="md:flex md:flex-row gap-2 md:gap-3 text-center">
           <Button
             variant="primary"
             size="sm"
@@ -58,7 +58,7 @@ export default function CategoryCard({
           <Button
             variant="outline"
             size="sm"
-            className="border-2 text-primary px-4 md:px-6 transition-all duration-300"
+            className="border-2 text-primary mt-3 md:mt-0 px-8 md:px-6 transition-all duration-300"
             dir="rtl"
           >
             جزئیات

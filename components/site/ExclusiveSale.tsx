@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import OfferCard from "./OfferCard";
+import { CardSlider } from "../ui";
 
 // Fake data برای کارت‌ها
 const fakeOffers = [
@@ -11,7 +12,7 @@ const fakeOffers = [
     title: "محافظ یزکرم قری 63 آمپر FIDEL",
     description:
       "مرور یپسومر متت ساخنگی با تولید سادگی. مانعومهم از صنعت چاپ و با استفاده از طراحان گرافیک است.",
-    imageSrc: "/images/product.png",
+    imageSrc: "/images/product2.png",
     imageAlt: "محافظ یزکرم",
   },
   {
@@ -19,7 +20,7 @@ const fakeOffers = [
     title: "محافظ یزکرم قری 63 آمپر FIDEL",
     description:
       "مرور یپسومر متت ساخنگی با تولید سادگی. مانعومهم از صنعت چاپ و با استفاده از طراحان گرافیک است.",
-    imageSrc: "/images/product.png",
+    imageSrc: "/images/product2.png",
     imageAlt: "محافظ یزکرم",
   },
   {
@@ -27,7 +28,7 @@ const fakeOffers = [
     title: "محافظ یزکرم قری 63 آمپر FIDEL",
     description:
       "مرور یپسومر متت ساخنگی با تولید سادگی. مانعومهم از صنعت چاپ و با استفاده از طراحان گرافیک است.",
-    imageSrc: "/images/product.png",
+    imageSrc: "/images/product2.png",
     imageAlt: "محافظ یزکرم",
   },
 ];
@@ -104,7 +105,8 @@ function ExclusiveSale() {
         </div>
 
         {/* کارت‌ها */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto mb-12">
+        {/* کارت‌ها - دسکتاپ: بدون تغییر */}
+        <div className="hidden md:grid md:grid-cols-3 md:gap-8 max-w-6xl mx-auto mb-12">
           {fakeOffers.map((offer) => (
             <OfferCard
               key={offer.id}
@@ -114,6 +116,21 @@ function ExclusiveSale() {
               imageAlt={offer.imageAlt}
             />
           ))}
+        </div>
+
+        {/* کارت‌ها cardSlider - فقط موبایل */}
+        <div className="mb-12 md:hidden">
+          <CardSlider itemClassName="w-[82%]">
+            {fakeOffers.map((offer) => (
+              <OfferCard
+                key={offer.id}
+                title={offer.title}
+                description={offer.description}
+                imageSrc={offer.imageSrc}
+                imageAlt={offer.imageAlt}
+              />
+            ))}
+          </CardSlider>
         </div>
 
         {/* تایمر */}

@@ -1,7 +1,7 @@
 "use client";
 import DotPattern from "./DotPattern";
 import SectionBorderTitle from "./SectionBorderTitle";
-import { Button } from "../ui";
+import { Button, CardSlider } from "../ui";
 import CategoryCard from "./CategoryCard";
 
 interface Category {
@@ -92,7 +92,8 @@ export default function CategorySection({
         </div>
 
         {/* Categories Grid - 2 columns on desktop, 1 on mobile */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+        {/* Categories Grid - دسکتاپ: بدون تغییر */}
+        <div className="hidden md:grid md:grid-cols-2 md:gap-8">
           {categories.map((category) => (
             <CategoryCard
               key={category.id}
@@ -102,6 +103,25 @@ export default function CategorySection({
               variant={category.variant}
             />
           ))}
+        </div>
+
+        {/* Categories cardSlider - فقط موبایل */}
+        <div className="md:hidden">
+          <CardSlider
+            itemClassName="w-[88%]"
+            showArrows={false}
+            showDots={false}
+          >
+            {categories.map((category) => (
+              <CategoryCard
+                key={category.id}
+                imageSrc={category.imageSrc}
+                title={category.title}
+                imageAlt={category.imageAlt}
+                variant={category.variant}
+              />
+            ))}
+          </CardSlider>
         </div>
 
         {/* More Button */}

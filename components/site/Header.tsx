@@ -61,10 +61,10 @@ export function Header({ locale, messages, whiteText }: Props) {
       href: `/${locale}/blog`,
       label: messages.articles,
     },
-    {
-      href: `/${locale}/workExamples`,
-      label: messages.workExamples,
-    },
+    // {
+    //   href: `/${locale}/workExamples`,
+    //   label: messages.workExamples,
+    // },
   ];
 
   const isLinkActive = (href: string) => {
@@ -124,7 +124,7 @@ export function Header({ locale, messages, whiteText }: Props) {
         <button
           onClick={() => setIsMenuOpen(true)}
           aria-label="باز کردن منو"
-          className={`flex size-10 items-center justify-center rounded-full border  ${whiteText ? "text-white border-white/20" : "text-black border-black"} md:hidden`}
+          className={`flex size-10 bg-primary items-center justify-center rounded-full border  text-white border-white/20 md:hidden`}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

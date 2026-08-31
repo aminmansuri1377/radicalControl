@@ -14,13 +14,28 @@
 export { cn } from "@/lib/cn";
 
 // Core primitives
-export { Button, type ButtonProps, type ButtonVariant, type ButtonSize } from "./Button";
+export {
+  Button,
+  type ButtonProps,
+  type ButtonVariant,
+  type ButtonSize,
+} from "./Button";
 export { Spinner, type SpinnerProps } from "./Spinner";
-export { Badge, type BadgeProps, type BadgeVariant, type BadgeSize } from "./Badge";
+export {
+  Badge,
+  type BadgeProps,
+  type BadgeVariant,
+  type BadgeSize,
+} from "./Badge";
 export { Slot } from "./Slot";
-
+export { CardSlider } from "./CardSlider";
 // Typography
-export { Text, Heading, type TextProps, type HeadingProps } from "./typography/Text";
+export {
+  Text,
+  Heading,
+  type TextProps,
+  type HeadingProps,
+} from "./typography/Text";
 
 // Icons
 export * from "./icon";
@@ -56,28 +71,22 @@ export {
   TableCell,
   TableCaption,
 } from "./Table";
-export { Tabs, TabsList, TabsTrigger, TabsContent, type TabsProps } from "./Tabs";
+export {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+  type TabsProps,
+} from "./Tabs";
 export { Modal, type ModalProps } from "./Modal";
-export {
-  Alert,
-  AlertTitle,
-  AlertDescription,
-  type AlertProps,
-} from "./Alert";
-export {
-  Pagination,
-  type PaginationProps,
-} from "./Pagination";
+export { Alert, AlertTitle, AlertDescription, type AlertProps } from "./Alert";
+export { Pagination, type PaginationProps } from "./Pagination";
 
 // Form primitives (re-export the full form barrel)
 export * from "./form";
 
 // Selection primitives
-export {
-  Dropdown,
-  type DropdownProps,
-  type DropdownOption,
-} from "./Dropdown";
+export { Dropdown, type DropdownProps, type DropdownOption } from "./Dropdown";
 export { Combobox, type ComboboxProps } from "./Combobox";
 export { MultiSelect, type MultiSelectProps } from "./MultiSelect";
 

@@ -26,7 +26,7 @@ export function Hero({ locale }: { locale: string }) {
 
       <div className="mx-auto md:mx-0 grid w-full max-w-7xl grid-cols-1 items-center gap-12 px-6 py-16 md:grid-cols-2 md:gap-24 lg:px-0">
         {/* Text Content */}
-        <div className="order-2 flex flex-col items-start gap-6 text-right md:order-1">
+        <div className="order-2 flex flex-col items-start gap-6 text-center md:text-right md:order-1">
           <h1
             className="hero-reveal text-3xl font-peyda-bold font-bold leading-snug tracking-tight text-slate-900 sm:text-4xl md:text-[2.75rem] lg:text-4xl"
             style={{ animationDelay: "1s" }}
